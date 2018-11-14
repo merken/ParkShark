@@ -1,0 +1,14 @@
+﻿{
+  "divisions": [
+    {
+      "name": "Apple",
+      "director": "Steve Jobs",
+      "originalName": "Apple Computer"
+    },
+    {
+      "name": "International Brol Machinekes",
+      "director": "Steve Flops",
+      "originalName": "IBM"
+    }
+  ]
+}

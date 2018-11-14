@@ -1,0 +1,5 @@
+﻿{
+  "ConnectionStrings": {
+    "ParkSharkDb": "Data source=.\\SQLEXPRESS;Initial Catalog=ParkSharkTestDb;Integrated Security=True;"
+  }
+}
