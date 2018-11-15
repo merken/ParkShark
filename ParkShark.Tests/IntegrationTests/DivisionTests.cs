@@ -23,8 +23,10 @@ namespace ParkShark.Tests.IntegrationTests
                 Id = division.Id,
                 Name = division.Name,
                 OriginalName = division.OriginalName,
-                Director = division.Director
+                Director = division.Director,
+                ParentDivisionId = division.ParentDivisionId
             });
+            mapper.CreateMap<CreateSubDivisionDto, Division>((dto) => new Division(dto.Name, dto.OriginalName, dto.Director, dto.ParentDivisionId));
         }
 
         [TestMethod]
@@ -78,6 +80,32 @@ namespace ParkShark.Tests.IntegrationTests
                 Assert.AreEqual("Apple", division.Name);
                 Assert.AreEqual("Apple Computer", division.OriginalName);
                 Assert.AreEqual("Steve Jobs", division.Director);
+            });
+        }
+
+        [TestMethod]
+        public async Task SubDivisionShouldBeAdded()
+        {
+            await RunWithinTransactionAndRollBack(async (client) =>
+            {
+                var divisionToAdd = new CreateSubDivisionDto
+                {
+                    Name = "New",
+                    OriginalName = "Division",
+                    Director = "John Doe",
+                    ParentDivisionId = 1
+                };
+
+                var payload = Serialize(divisionToAdd);
+                var divisionAddResponse = await client.PostAsync("api/divisions/sub", payload);
+                var division = await DeserializeAsAsync<DivisionDto>(divisionAddResponse.Content);
+
+
+                Assert.AreEqual(divisionToAdd.Name, division.Name);
+                Assert.AreEqual(divisionToAdd.OriginalName, division.OriginalName);
+                Assert.AreEqual(divisionToAdd.Director, division.Director);
+                Assert.AreEqual(1, division.ParentDivisionId);
+                Assert.AreNotEqual(default(int), division.Id);
             });
         }
     }

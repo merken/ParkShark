@@ -5,12 +5,11 @@ using System.Threading.Tasks;
 
 namespace ParkShark.Web.DTO
 {
-    public class DivisionDto
+    public class CreateSubDivisionDto
     {
-        public int Id { get; set; }
         public string Name { get; set; }
         public string OriginalName { get; set; }
         public string Director { get; set; }
-        public int? ParentDivisionId { get; set; }
+        public int ParentDivisionId { get; set; }
     }
 }

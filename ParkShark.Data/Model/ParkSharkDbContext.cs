@@ -27,6 +27,11 @@ namespace ParkShark.Data.Model
                 .Property(d => d.OriginalName)
                 .HasColumnName("Original_Name");
 
+            modelBuilder.Entity<Division>()
+                .HasOne(d => d.ParentDivision)
+                .WithMany()
+                .HasForeignKey(d => d.ParentDivisionId);
+
             base.OnModelCreating(modelBuilder);
         }
     }

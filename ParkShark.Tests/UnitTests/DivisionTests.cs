@@ -25,8 +25,10 @@ namespace ParkShark.Tests.UnitTests
                 Id = division.Id,
                 Name = division.Name,
                 OriginalName = division.OriginalName,
-                Director = division.Director
+                Director = division.Director,
+                ParentDivisionId = division.ParentDivisionId
             });
+            mapper.CreateMap<CreateSubDivisionDto, Division>((dto) => new Division(dto.Name, dto.OriginalName, dto.Director, dto.ParentDivisionId));
         }
 
         [TestMethod]
@@ -54,7 +56,7 @@ namespace ParkShark.Tests.UnitTests
         }
 
         [TestMethod]
-        public async Task DivisionsShouldBeCreated()
+        public async Task DivisionShouldBeCreated()
         {
             using (var context = NewInMemoryParkSharkDbContext())
             {
@@ -99,6 +101,33 @@ namespace ParkShark.Tests.UnitTests
                 Assert.AreEqual("Steve Jobs", division.Director);
                 Assert.AreEqual("Apple Computer", division.OriginalName);
                 Assert.AreEqual(steveJobsDivision.Id, division.Id);
+            }
+        }
+
+        [TestMethod]
+        public async Task SubDivisionShouldBeCreated()
+        {
+            using (var context = NewInMemoryParkSharkDbContext())
+            {
+                var divisionService = new DivisionService(context);
+
+                var controller = new DivisionsController(mapper, divisionService);
+                var division = GetResult<DivisionDto>(await controller.CreateSubDivision(new CreateSubDivisionDto
+                {
+                    Name = "Test",
+                    Director = "Dir",
+                    OriginalName = "Te",
+                    ParentDivisionId = 1
+                }));
+
+                var divisionInDb = await context.Divisions.FindAsync(division.Id);
+
+                Assert.AreEqual("Test", division.Name);
+                Assert.AreEqual("Dir", division.Director);
+                Assert.AreEqual("Te", division.OriginalName);
+                Assert.AreNotEqual(default(int), division.Id);
+                Assert.AreEqual(division.Id, divisionInDb.Id);
+                Assert.AreEqual(1, divisionInDb.ParentDivisionId);
             }
         }
     }

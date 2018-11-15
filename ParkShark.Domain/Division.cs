@@ -16,12 +16,12 @@ namespace ParkShark.Domain
 
             if (String.IsNullOrEmpty(name))
             {
-                throw new ValidationException<Division>("Name is required");
+                throw new ValidationException<Division>("name is required");
             }
 
             if (String.IsNullOrEmpty(director))
             {
-                throw new ValidationException<Division>("Director is required");
+                throw new ValidationException<Division>("director is required");
             }
 
             this.Name = name;
@@ -29,9 +29,21 @@ namespace ParkShark.Domain
             this.Director = director;
         }
 
+        public Division(string name, string originalName, string director, int parentDivisionId): this(name, originalName, director)
+        {
+            if (default(int) == parentDivisionId)
+            {
+                throw new ValidationException<Division>("parentDivisionId is required");
+            }
+
+            this.ParentDivisionId = parentDivisionId;
+        }
+
         public int Id { get; private set; }
         public string Name { get; set; }
         public string OriginalName { get; set; }
         public string Director { get; set; }
+        public int? ParentDivisionId { get; set; }
+        public Division ParentDivision { get; set; }
     }
 }

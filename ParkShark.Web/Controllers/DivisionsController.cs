@@ -56,5 +56,17 @@ namespace ParkShark.Web.Controllers
 
             return Ok(this.mapper.MapTo<DivisionDto, Division>(division));
         }
+
+        [HttpPost]
+        [Route("sub")]
+        public async Task<ActionResult<DivisionDto>> CreateSubDivision(CreateSubDivisionDto createSubDivision)
+        {
+            var division = this.mapper.MapTo<Division, CreateSubDivisionDto>(createSubDivision);
+
+            var newDivision = await this.service.CreateSubDivision(division);
+            var dto = this.mapper.MapTo<DivisionDto, Division>(newDivision);
+
+            return Ok(dto);
+        }
     }
 }

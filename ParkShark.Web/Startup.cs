@@ -58,8 +58,10 @@ namespace ParkShark.Web
                 Id = division.Id,
                 Name = division.Name,
                 OriginalName = division.OriginalName,
-                Director = division.Director
+                Director = division.Director,
+                ParentDivisionId = division.ParentDivisionId
             });
+            mapper.CreateMap<CreateSubDivisionDto, Division>((dto) => new Division(dto.Name, dto.OriginalName, dto.Director, dto.ParentDivisionId));
         }
 
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.
