@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Data.Common;
 using System.IO;
 using System.Net.Http;
 using System.Text;
@@ -26,6 +27,11 @@ namespace ParkShark.Tests.IntegrationTests
     [TestClass]
     public abstract class IntegrationTestBase
     {
+        private static IConfiguration GetConfiguration() => new ConfigurationBuilder()
+            .SetBasePath(Directory.GetCurrentDirectory())
+            .AddJsonFile("testsettings.json")
+            .Build();
+
         [AssemblyInitialize]
         public static void AssemblyInit(TestContext testContext)
         {
@@ -35,27 +41,11 @@ namespace ParkShark.Tests.IntegrationTests
 
             using (var context = new ParkSharkDbContext(options))
             {
-                AddTestDataFromFile(context);
+                PurgeDbAndAddTestDataFromFile(context);
             }
         }
 
-        private static IConfiguration GetConfiguration() => new ConfigurationBuilder()
-            .SetBasePath(Directory.GetCurrentDirectory())
-            .AddJsonFile("testsettings.json")
-            .Build();
-
-        protected HttpClient SetupTestServerAndGetTestClient()
-        {
-            var builder = new WebHostBuilder()
-                .UseEnvironment("Development")
-                .UseConfiguration(GetConfiguration())
-                .UseStartup<TestStartup>();
-
-            var testServer = new TestServer(builder);
-            return testServer.CreateClient();
-        }
-
-        private static void AddTestDataFromFile(ParkSharkDbContext context)
+        private static void PurgeDbAndAddTestDataFromFile(ParkSharkDbContext context)
         {
             List<Division> divisions = null;
 
@@ -74,12 +64,45 @@ namespace ParkShark.Tests.IntegrationTests
             context.SaveChanges();
         }
 
+        protected static async Task RunWithinTransactionAndRollBack(Func<HttpClient, Task> codeToRun)
+        {
+            //Start a builder using the testsettings and the TestStartup class
+            var builder = new WebHostBuilder()
+                .UseEnvironment("Development")
+                .UseConfiguration(GetConfiguration())
+                .UseStartup<TestStartup>();
+
+            //Create the TestServer
+            var testServer = new TestServer(builder);
+            //Get the singleton transaction out of the server
+            var transaction = testServer.Host.Services.GetService<DbTransaction>();
+            //Create a client to interact with the server
+            var client = testServer.CreateClient();
+
+            //Run your test code
+            await codeToRun(client);
+
+            //Roll back everything
+            transaction.Rollback();
+        }
+
+        /// <summary>
+        /// This handy little method allows you to deserialize a response content from the test server
+        /// </summary>
+        /// <typeparam name="T"></typeparam>
+        /// <param name="content"></param>
+        /// <returns></returns>
         protected static async Task<T> DeserializeAsAsync<T>(HttpContent content)
         {
             var responseContent = await content.ReadAsStringAsync();
             return JsonConvert.DeserializeObject<T>(responseContent);
         }
 
+        /// <summary>
+        /// This handy little method allows you to serialize request content to send to the test server
+        /// </summary>
+        /// <param name="payload"></param>
+        /// <returns></returns>
         protected static HttpContent Serialize(object payload)
         {
             return new StringContent(JsonConvert.SerializeObject(payload), Encoding.UTF8, "application/json");

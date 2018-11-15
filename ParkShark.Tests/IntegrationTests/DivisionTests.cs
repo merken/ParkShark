@@ -14,7 +14,7 @@ namespace ParkShark.Tests.IntegrationTests
         [TestMethod]
         public async Task DivisionsShouldBeReturned()
         {
-            using (var client = SetupTestServerAndGetTestClient())
+            await RunWithinTransactionAndRollBack(async (client) =>
             {
                 var divisionsResponse = await client.GetAsync("api/divisions");
                 var divisions = await DeserializeAsAsync<IEnumerable<Division>>(divisionsResponse.Content);
@@ -24,13 +24,13 @@ namespace ParkShark.Tests.IntegrationTests
 
                 Assert.AreEqual("Apple", jobsDivision.Name);
                 Assert.AreEqual("International Brol Machinekes", flopsDivision.Name);
-            }
+            });
         }
 
         [TestMethod]
         public async Task DivisionShouldBeAdded()
         {
-            using (var client = SetupTestServerAndGetTestClient())
+            await RunWithinTransactionAndRollBack(async (client) =>
             {
                 var divisionToAdd = new Division
                 {
@@ -40,7 +40,7 @@ namespace ParkShark.Tests.IntegrationTests
                 };
 
                 var payload = Serialize(divisionToAdd);
-                var divisionAddResponse = await client.PostAsync("api/divisions",payload);
+                var divisionAddResponse = await client.PostAsync("api/divisions", payload);
                 var division = await DeserializeAsAsync<Division>(divisionAddResponse.Content);
 
 
@@ -48,7 +48,7 @@ namespace ParkShark.Tests.IntegrationTests
                 Assert.AreEqual(divisionToAdd.OriginalName, division.OriginalName);
                 Assert.AreEqual(divisionToAdd.Director, division.Director);
                 Assert.AreNotEqual(default(int), division.Id);
-            }
+            });
         }
     }
 }
