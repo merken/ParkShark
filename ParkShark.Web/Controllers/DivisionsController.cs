@@ -28,20 +28,33 @@ namespace ParkShark.Web.Controllers
         }
 
         [HttpGet]
-        public async Task<IEnumerable<DivisionDto>> GetDivisions()
+        public async Task<ActionResult<IEnumerable<DivisionDto>>> GetDivisions()
         {
             var divisions = await this.service.GetAllDivisions();
-            return this.mapper.MapToList<DivisionDto, Division>(divisions);
+            return Ok(this.mapper.MapToList<DivisionDto, Division>(divisions));
         }
 
         [HttpPost]
-        public async Task<DivisionDto> CreateDivision(CreateDivisionDto createDivision)
+        public async Task<ActionResult<DivisionDto>> CreateDivision(CreateDivisionDto createDivision)
         {
             var division = this.mapper.MapTo<Division, CreateDivisionDto>(createDivision);
 
             var newDivision = await this.service.CreateDivision(division);
+            var dto = this.mapper.MapTo<DivisionDto, Division>(newDivision);
 
-            return this.mapper.MapTo<DivisionDto, Division>(newDivision);
+            return Ok(dto);
+        }
+
+        [HttpGet]
+        [Route("{id:int}")]
+        public async Task<ActionResult<DivisionDto>> GetDivision(int id)
+        {
+            var division = await this.service.GetDivision(id);
+
+            if (division == null)
+                return NotFound();
+
+            return Ok(this.mapper.MapTo<DivisionDto, Division>(division));
         }
     }
 }

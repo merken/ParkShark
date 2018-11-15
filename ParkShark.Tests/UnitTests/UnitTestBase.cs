@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Text;
+using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using ParkShark.Data.Model;
 
@@ -18,6 +19,13 @@ namespace ParkShark.Tests.UnitTests
         protected static ParkSharkDbContext NewInMemoryParkSharkDbContext()
         {
             return new ParkSharkDbContext(CreateNewInMemoryDatabaseOptions());
+        }
+
+        protected static T GetResult<T>(ActionResult<T> actionResult)
+            where T : class
+        {
+            var okResult = actionResult.Result as OkObjectResult;
+            return okResult.Value as T;
         }
     }
 }

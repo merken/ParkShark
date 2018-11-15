@@ -1,3 +1,4 @@
+using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
@@ -12,7 +13,7 @@ namespace ParkShark.Tests.UnitTests
     [TestClass]
     public class DivisionTests : UnitTestBase
     {
-        private Mapper mapper = null;
+        private readonly Mapper mapper = null;
 
         public DivisionTests()
         {
@@ -43,7 +44,7 @@ namespace ParkShark.Tests.UnitTests
                 var divisionService = new DivisionService(context);
 
                 var controller = new DivisionsController(mapper, divisionService);
-                var divisions = await controller.GetDivisions();
+                var divisions = GetResult<IEnumerable<DivisionDto>>((await controller.GetDivisions()));
 
                 var jobsDivision = divisions.FirstOrDefault(d => d.Director == "Steve Jobs");
                 var flopsDivision = divisions.FirstOrDefault(d => d.Director == "Steve Flops");
@@ -60,12 +61,12 @@ namespace ParkShark.Tests.UnitTests
                 var divisionService = new DivisionService(context);
 
                 var controller = new DivisionsController(mapper, divisionService);
-                var division = await controller.CreateDivision(new CreateDivisionDto
+                var division = GetResult<DivisionDto>(await controller.CreateDivision(new CreateDivisionDto
                 {
                     Name = "Test",
                     Director = "Dir",
                     OriginalName = "Te"
-                });
+                }));
 
                 var divisionInDb = await context.Divisions.FindAsync(division.Id);
 
@@ -74,6 +75,30 @@ namespace ParkShark.Tests.UnitTests
                 Assert.AreEqual("Te", division.OriginalName);
                 Assert.AreNotEqual(default(int), division.Id);
                 Assert.AreEqual(division.Id, divisionInDb.Id);
+            }
+        }
+
+        [TestMethod]
+        public async Task DivisionShouldBeReturned()
+        {
+            using (var context = NewInMemoryParkSharkDbContext())
+            {
+                //Setup test data
+                await context.Divisions.AddAsync(new Division("Apple", "Apple Computer", "Steve Jobs"));
+
+                await context.SaveChangesAsync();
+
+                var steveJobsDivision = context.Divisions.FirstOrDefault(d => d.Name == "Apple");
+
+                var divisionService = new DivisionService(context);
+
+                var controller = new DivisionsController(mapper, divisionService);
+                var division = GetResult<DivisionDto>((await controller.GetDivision(steveJobsDivision.Id)));
+
+                Assert.AreEqual("Apple", division.Name);
+                Assert.AreEqual("Steve Jobs", division.Director);
+                Assert.AreEqual("Apple Computer", division.OriginalName);
+                Assert.AreEqual(steveJobsDivision.Id, division.Id);
             }
         }
     }

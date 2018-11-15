@@ -12,6 +12,7 @@ namespace ParkShark.Services
     public interface IDivisionService : IParkSharkService
     {
         Task<Division> CreateDivision(Division division);
+        Task<Division> GetDivision(int id);
         Task<IEnumerable<Division>> GetAllDivisions();
     }
 
@@ -32,6 +33,11 @@ namespace ParkShark.Services
                 throw new PersistenceException("Division was not created");
 
             return division;
+        }
+
+        public async Task<Division> GetDivision(int id)
+        {
+            return await context.Divisions.AsNoTracking().FirstOrDefaultAsync(d => d.Id == id);
         }
 
         public async Task<IEnumerable<Division>> GetAllDivisions()

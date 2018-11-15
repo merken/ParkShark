@@ -66,5 +66,19 @@ namespace ParkShark.Tests.IntegrationTests
                 Assert.AreNotEqual(default(int), division.Id);
             });
         }
+
+        [TestMethod]
+        public async Task DivisionShouldBeReturned()
+        {
+            await RunWithinTransactionAndRollBack(async (client) =>
+            {
+                var divisionsResponse = await client.GetAsync("api/divisions/1");
+                var division = await DeserializeAsAsync<DivisionDto>(divisionsResponse.Content);
+
+                Assert.AreEqual("Apple", division.Name);
+                Assert.AreEqual("Apple Computer", division.OriginalName);
+                Assert.AreEqual("Steve Jobs", division.Director);
+            });
+        }
     }
 }

@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Data.Common;
+using System.Data.SqlClient;
 using System.IO;
 using System.Net.Http;
 using System.Text;
@@ -47,6 +48,12 @@ namespace ParkShark.Tests.IntegrationTests
             }
         }
 
+        private static void ReseedIdentity(ParkSharkDbContext context, string table)
+        {
+            var parameter = new SqlParameter("@table", table);
+            context.Database.ExecuteSqlCommand("DBCC CHECKIDENT(@table, RESEED, 0)", parameter);
+        }
+
         private static void PurgeDbAndAddTestDataFromFile(ParkSharkDbContext context)
         {
             List<Division> divisions = null;
@@ -61,7 +68,10 @@ namespace ParkShark.Tests.IntegrationTests
             context.Divisions.RemoveRange(context.Divisions);
 
             if (divisions != null)
+            {
                 context.Divisions.AddRange(divisions);
+                ReseedIdentity(context, "Divisions");
+            }
 
             context.SaveChanges();
         }
