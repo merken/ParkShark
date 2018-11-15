@@ -13,8 +13,10 @@ using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using Newtonsoft.Json;
+using Newtonsoft.Json.Serialization;
 using ParkShark.Data.Model;
 using ParkShark.Domain;
+using ParkShark.Infrastructure;
 using ParkShark.Web;
 
 namespace ParkShark.Tests.IntegrationTests
@@ -64,7 +66,7 @@ namespace ParkShark.Tests.IntegrationTests
             context.SaveChanges();
         }
 
-        protected static async Task RunWithinTransactionAndRollBack(Func<HttpClient, Task> codeToRun)
+        protected async Task RunWithinTransactionAndRollBack(Func<HttpClient, Task> codeToRun)
         {
             //Start a builder using the testsettings and the TestStartup class
             var builder = new WebHostBuilder()
@@ -74,6 +76,11 @@ namespace ParkShark.Tests.IntegrationTests
 
             //Create the TestServer
             var testServer = new TestServer(builder);
+
+            //Allow the test to configure the mappings
+            var mapper = testServer.Host.Services.GetService<Mapper>();
+            ConfigureMappings(mapper);
+
             //Get the singleton transaction out of the server
             var transaction = testServer.Host.Services.GetService<DbTransaction>();
             //Create a client to interact with the server
@@ -86,13 +93,17 @@ namespace ParkShark.Tests.IntegrationTests
             transaction.Rollback();
         }
 
+        protected virtual void ConfigureMappings(Mapper mapper)
+        {
+        }
+
         /// <summary>
         /// This handy little method allows you to deserialize a response content from the test server
         /// </summary>
         /// <typeparam name="T"></typeparam>
         /// <param name="content"></param>
         /// <returns></returns>
-        protected static async Task<T> DeserializeAsAsync<T>(HttpContent content)
+        protected async Task<T> DeserializeAsAsync<T>(HttpContent content)
         {
             var responseContent = await content.ReadAsStringAsync();
             return JsonConvert.DeserializeObject<T>(responseContent);
@@ -103,9 +114,9 @@ namespace ParkShark.Tests.IntegrationTests
         /// </summary>
         /// <param name="payload"></param>
         /// <returns></returns>
-        protected static HttpContent Serialize(object payload)
+        protected HttpContent Serialize(object payload)
         {
-            return new StringContent(JsonConvert.SerializeObject(payload), Encoding.UTF8, "application/json");
+            return new StringContent(JsonConvert.SerializeObject(payload, new JsonSerializerSettings { ContractResolver = new CamelCasePropertyNamesContractResolver() }), Encoding.UTF8, "application/json");
         }
     }
 }

@@ -4,17 +4,26 @@ using System.Data;
 using System.Data.Common;
 using System.Data.SqlClient;
 using System.Linq;
+using System.Reflection;
 using System.Threading.Tasks;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using ParkShark.Data.Model;
+using ParkShark.Infrastructure;
 using ParkShark.Web.Filters;
 
 namespace ParkShark.Web
 {
     public static class ServiceCollectionExtensions
     {
+        public static void UseAllOfType<T>(this IServiceCollection serviceCollection, Assembly[] assemblies, ServiceLifetime lifetime = ServiceLifetime.Scoped)
+        {
+            var typesFromAssemblies = assemblies.SelectMany(a => a.DefinedTypes.Where(x => x.IsClass && x.GetInterfaces().Contains(typeof(T))));
+            foreach (var type in typesFromAssemblies)
+                serviceCollection.Add(new ServiceDescriptor(type.GetInterfaces()[0], type, lifetime));
+        }
+
         public static void UseSqlServer(this IServiceCollection serviceCollection, string connectionString, ILoggerFactory loggerFactory, IsolationLevel level = IsolationLevel.ReadUncommitted)
         {
             //First, configure the SqlConnection and open it
@@ -49,10 +58,10 @@ namespace ParkShark.Web
 
             //Finally, create the DbContext, using the transaction
             //This is done for every time a DbContext is requested (could be more than once per request/response)
-            serviceCollection.AddTransient<ParkSharkDbContext>((serviceProvider) =>
+            serviceCollection.AddScoped<ParkSharkDbContext>((serviceProvider) =>
             {
-                var options = serviceProvider.GetService<DbContextOptions>();
                 var transaction = serviceProvider.GetService<DbTransaction>();
+                var options = serviceProvider.GetService<DbContextOptions>();
                 var context = new ParkSharkDbContext(options);
                 context.Database.UseTransaction(transaction);
                 return context;
@@ -70,6 +79,11 @@ namespace ParkShark.Web
                 {
                     setup.Filters.AddService<TransactionFilter>(1);
                 });
+        }
+
+        public static void UseMapper(this IServiceCollection serviceCollection, Mapper mapper)
+        {
+            serviceCollection.AddSingleton(mapper);
         }
     }
 }

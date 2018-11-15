@@ -8,6 +8,9 @@ using Microsoft.EntityFrameworkCore;
 using ParkShark.Data.Model;
 using ParkShark.Domain;
 using ParkShark.Domain.Exceptions;
+using ParkShark.Infrastructure;
+using ParkShark.Services;
+using ParkShark.Web.DTO;
 
 namespace ParkShark.Web.Controllers
 {
@@ -15,41 +18,30 @@ namespace ParkShark.Web.Controllers
     [ApiController]
     public class DivisionsController : ControllerBase
     {
-        private readonly ParkSharkDbContext context;
+        private readonly Mapper mapper;
+        private readonly IDivisionService service;
 
-        public DivisionsController(ParkSharkDbContext context)
+        public DivisionsController(Mapper mapper, IDivisionService service)
         {
-            this.context = context;
+            this.mapper = mapper;
+            this.service = service;
         }
 
         [HttpGet]
-        public async Task<IEnumerable<Division>> GetDivisions()
+        public async Task<IEnumerable<DivisionDto>> GetDivisions()
         {
-            return await this.context.Divisions.AsNoTracking().ToListAsync();
+            var divisions = await this.service.GetAllDivisions();
+            return this.mapper.MapToList<DivisionDto, Division>(divisions);
         }
 
         [HttpPost]
-        public async Task<Division> CreateDivision(Division division)
+        public async Task<DivisionDto> CreateDivision(CreateDivisionDto createDivision)
         {
-            if (division.Id != default(int))
-            {
-                throw new ValidationException<Division>("A new division should not contain an Id");
-            }
+            var division = this.mapper.MapTo<Division, CreateDivisionDto>(createDivision);
 
-            if (String.IsNullOrEmpty(division.Name))
-            {
-                throw new ValidationException<Division>("Name is required");
-            }
+            var newDivision = await this.service.CreateDivision(division);
 
-            if (String.IsNullOrEmpty(division.Director))
-            {
-                throw new ValidationException<Division>("Director is required");
-            }
-
-            await this.context.AddAsync(division);
-            await this.context.SaveChangesAsync();
-            
-            return division;
+            return this.mapper.MapTo<DivisionDto, Division>(newDivision);
         }
     }
 }

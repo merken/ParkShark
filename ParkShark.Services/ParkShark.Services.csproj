@@ -1,0 +1,13 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <TargetFramework>netstandard2.0</TargetFramework>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\ParkShark.Data\ParkShark.Data.csproj" />
+    <ProjectReference Include="..\ParkShark.Domain\ParkShark.Domain.csproj" />
+    <ProjectReference Include="..\ParkShark.Infrastructure\ParkShark.Infrastructure.csproj" />
+  </ItemGroup>
+
+</Project>

@@ -17,6 +17,8 @@
   <ItemGroup>
     <ProjectReference Include="..\ParkShark.Data\ParkShark.Data.csproj" />
     <ProjectReference Include="..\ParkShark.Domain\ParkShark.Domain.csproj" />
+    <ProjectReference Include="..\ParkShark.Infrastructure\ParkShark.Infrastructure.csproj" />
+    <ProjectReference Include="..\ParkShark.Services\ParkShark.Services.csproj" />
   </ItemGroup>
 
 </Project>

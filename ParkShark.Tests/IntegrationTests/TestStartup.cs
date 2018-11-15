@@ -8,6 +8,7 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using ParkShark.Data.Model;
+using ParkShark.Infrastructure;
 using ParkShark.Web;
 using ParkShark.Web.Controllers;
 
@@ -22,6 +23,8 @@ namespace ParkShark.Tests.IntegrationTests
         protected override void ConfigureAdditionalServices(IServiceCollection services)
         {
             var connectionString = Configuration.GetConnectionString("ParkSharkDb");
+
+            services.UseAllOfType<IParkSharkService>(new[] { typeof(ParkShark.Services.Assembly).Assembly }, ServiceLifetime.Transient);
             
             //Register all ApiControllers from our Web project
             services.AddMvc().AddApplicationPart(typeof(Startup).Assembly);
@@ -55,7 +58,7 @@ namespace ParkShark.Tests.IntegrationTests
 
             //Finally, create the DbContext, using the one singleton transaction
             //This is done for every time a DbContext is requested (could be more than once per request/response)
-            services.AddTransient<ParkSharkDbContext>((serviceProvider) =>
+            services.AddScoped<ParkSharkDbContext>((serviceProvider) =>
             {
                 var options = serviceProvider.GetService<DbContextOptions>();
                 var transaction = serviceProvider.GetService<DbTransaction>();
@@ -63,6 +66,8 @@ namespace ParkShark.Tests.IntegrationTests
                 context.Database.UseTransaction(transaction);
                 return context;
             });
+
+            services.AddSingleton(new Mapper());
         }
     }
 }
