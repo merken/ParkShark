@@ -12,5 +12,6 @@ namespace ParkShark.Web.DTO
         public string OriginalName { get; set; }
         public string Director { get; set; }
         public int? ParentDivisionId { get; set; }
+        public List<DivisionDto> SubDivisions { get; set; } = new List<DivisionDto>();
     }
 }

@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Threading.Tasks;
 using Microsoft.EntityFrameworkCore;
 using ParkShark.Data.Model;
@@ -43,7 +44,7 @@ namespace ParkShark.Services
                 throw new ValidationException<Division>("A subdivision should have a ParentDivisionId");
 
             await context.Divisions.AddAsync(division);
-            
+
             if (await context.SaveChangesAsync() == 0)
                 throw new PersistenceException("SubDivision was not created");
 
@@ -52,12 +53,21 @@ namespace ParkShark.Services
 
         public async Task<Division> GetDivision(int id)
         {
-            return await context.Divisions.AsNoTracking().FirstOrDefaultAsync(d => d.Id == id);
+            return await context.Divisions
+                .Include(d => d.SubDivisions)
+                .Where(d => d.ParentDivisionId == null)
+                .AsNoTracking()
+                .FirstOrDefaultAsync(d => d.Id == id);
         }
 
         public async Task<IEnumerable<Division>> GetAllDivisions()
         {
-            var divisions = await context.Divisions.AsNoTracking().ToListAsync();
+            var divisions = await context.Divisions
+                .Include(d => d.SubDivisions)
+                .Where(d => d.ParentDivisionId == null)
+                .AsNoTracking()
+                .ToListAsync();
+
             return divisions;
         }
     }

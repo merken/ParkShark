@@ -53,13 +53,25 @@ namespace ParkShark.Web
         protected virtual void ConfigureMappings(Mapper mapper)
         {
             mapper.CreateMap<CreateDivisionDto, Division>((dto, m) => new Division(dto.Name, dto.OriginalName, dto.Director));
-            mapper.CreateMap<Division, DivisionDto>((division, m) => new DivisionDto
+            mapper.CreateMap<Division, DivisionDto>((division, m) =>
             {
-                Id = division.Id,
-                Name = division.Name,
-                OriginalName = division.OriginalName,
-                Director = division.Director,
-                ParentDivisionId = division.ParentDivisionId
+                var subDivisions = division.SubDivisions;
+
+                var subDivisionDtos = new List<DivisionDto>();
+                foreach (var subDivision in subDivisions)
+                {
+                    subDivisionDtos.Add(m.MapTo<DivisionDto, Division>(subDivision));
+                }
+
+                return new DivisionDto
+                {
+                    Id = division.Id,
+                    Name = division.Name,
+                    OriginalName = division.OriginalName,
+                    Director = division.Director,
+                    ParentDivisionId = division.ParentDivisionId,
+                    SubDivisions = subDivisionDtos
+                };
             });
             mapper.CreateMap<CreateSubDivisionDto, Division>((dto, m) => new Division(dto.Name, dto.OriginalName, dto.Director, dto.ParentDivisionId));
 

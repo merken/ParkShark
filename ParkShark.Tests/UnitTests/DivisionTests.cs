@@ -20,13 +20,25 @@ namespace ParkShark.Tests.UnitTests
             mapper = new Mapper();
             //Mappings for DTO and Entity
             mapper.CreateMap<CreateDivisionDto, Division>((dto, m) => new Division(dto.Name, dto.OriginalName, dto.Director));
-            mapper.CreateMap<Division, DivisionDto>((division, m) => new DivisionDto
+            mapper.CreateMap<Division, DivisionDto>((division, m) =>
             {
-                Id = division.Id,
-                Name = division.Name,
-                OriginalName = division.OriginalName,
-                Director = division.Director,
-                ParentDivisionId = division.ParentDivisionId
+                var subDivisions = division.SubDivisions;
+
+                var subDivisionDtos = new List<DivisionDto>();
+                foreach (var subDivision in subDivisions)
+                {
+                    subDivisionDtos.Add(m.MapTo<DivisionDto, Division>(subDivision));
+                }
+
+                return new DivisionDto
+                {
+                    Id = division.Id,
+                    Name = division.Name,
+                    OriginalName = division.OriginalName,
+                    Director = division.Director,
+                    ParentDivisionId = division.ParentDivisionId,
+                    SubDivisions = subDivisionDtos
+                };
             });
             mapper.CreateMap<CreateSubDivisionDto, Division>((dto, m) => new Division(dto.Name, dto.OriginalName, dto.Director, dto.ParentDivisionId));
         }
@@ -52,6 +64,28 @@ namespace ParkShark.Tests.UnitTests
                 var flopsDivision = divisions.FirstOrDefault(d => d.Director == "Steve Flops");
                 Assert.AreEqual("Apple", jobsDivision.Name);
                 Assert.AreEqual("International Brol Machinekes", flopsDivision.Name);
+            }
+        }
+
+        [TestMethod]
+        public async Task DivisionsWithSubDivisionsShouldBeReturned()
+        {
+            using (var context = NewInMemoryParkSharkDbContext())
+            {
+                //Setup test data
+                var parentDivision = new Division("Parent", "Parent", "Steve Jobs");
+                await context.Divisions.AddAsync(parentDivision);
+                await context.Divisions.AddAsync(new Division("Child1", "Child1", "Steve Jobs", parentDivision.Id));
+                await context.Divisions.AddAsync(new Division("Child2", "Child2", "Steve Jobs", parentDivision.Id));
+
+                await context.SaveChangesAsync();
+
+                var divisionService = new DivisionService(context);
+
+                var controller = new DivisionsController(mapper, divisionService);
+                var division = GetResult<DivisionDto>((await controller.GetDivision(parentDivision.Id)));
+
+                Assert.AreEqual(2, division.SubDivisions.Count);
             }
         }
 

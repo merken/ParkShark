@@ -18,13 +18,25 @@ namespace ParkShark.Tests.IntegrationTests
             base.ConfigureMappings(mapper);
 
             mapper.CreateMap<CreateDivisionDto, Division>((dto, m) => new Division(dto.Name, dto.OriginalName, dto.Director));
-            mapper.CreateMap<Division, DivisionDto>((division, m) => new DivisionDto
+            mapper.CreateMap<Division, DivisionDto>((division, m) =>
             {
-                Id = division.Id,
-                Name = division.Name,
-                OriginalName = division.OriginalName,
-                Director = division.Director,
-                ParentDivisionId = division.ParentDivisionId
+                var subDivisions = division.SubDivisions;
+
+                var subDivisionDtos = new List<DivisionDto>();
+                foreach (var subDivision in subDivisions)
+                {
+                    subDivisionDtos.Add(m.MapTo<DivisionDto, Division>(subDivision));
+                }
+
+                return new DivisionDto
+                {
+                    Id = division.Id,
+                    Name = division.Name,
+                    OriginalName = division.OriginalName,
+                    Director = division.Director,
+                    ParentDivisionId = division.ParentDivisionId,
+                    SubDivisions = subDivisionDtos
+                };
             });
             mapper.CreateMap<CreateSubDivisionDto, Division>((dto, m) => new Division(dto.Name, dto.OriginalName, dto.Director, dto.ParentDivisionId));
         }
@@ -83,6 +95,41 @@ namespace ParkShark.Tests.IntegrationTests
             });
         }
 
+
+        [TestMethod]
+        public async Task DivisionsWithSubDivisionsShouldBeReturned()
+        {
+            await RunWithinTransactionAndRollBack(async (client) =>
+            {
+                var division1 = new CreateSubDivisionDto
+                {
+                    Name = "Apple1",
+                    OriginalName = "Apple1",
+                    Director = "Steve Jobs",
+                    ParentDivisionId = 1
+                };
+
+                var division2 = new CreateSubDivisionDto
+                {
+                    Name = "Apple2",
+                    OriginalName = "Apple2",
+                    Director = "Steve Jobs",
+                    ParentDivisionId = 1
+                };
+
+                var payload = Serialize(division1);
+                await client.PostAsync("api/divisions/sub", payload);
+
+                payload = Serialize(division2);
+                await client.PostAsync("api/divisions/sub", payload);
+
+                var divisionsResponse = await client.GetAsync("api/divisions/1");
+                var division = await DeserializeAsAsync<DivisionDto>(divisionsResponse.Content);
+
+                Assert.AreEqual(2, division.SubDivisions.Count);
+            });
+        }
+
         [TestMethod]
         public async Task SubDivisionShouldBeAdded()
         {
@@ -99,7 +146,6 @@ namespace ParkShark.Tests.IntegrationTests
                 var payload = Serialize(divisionToAdd);
                 var divisionAddResponse = await client.PostAsync("api/divisions/sub", payload);
                 var division = await DeserializeAsAsync<DivisionDto>(divisionAddResponse.Content);
-
 
                 Assert.AreEqual(divisionToAdd.Name, division.Name);
                 Assert.AreEqual(divisionToAdd.OriginalName, division.OriginalName);

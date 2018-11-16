@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.Threading;
 using ParkShark.Domain.Exceptions;
 
@@ -45,5 +46,7 @@ namespace ParkShark.Domain
         public string Director { get; set; }
         public int? ParentDivisionId { get; set; }
         public Division ParentDivision { get; set; }
+        public ICollection<Division> SubDivisions { get; } = new List<Division>();
+
     }
 }

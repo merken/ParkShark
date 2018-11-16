@@ -67,9 +67,9 @@ namespace ParkShark.Infrastructure
                 throw new NotSupportedException($"Mapping from {fromType.Name} to {toType.Name} already in registry.");
 
             //func translation
-            object Translated(object a) => mapping(a as TFrom, this);
+            object mappingFunction(object a) => mapping(a as TFrom, this);
 
-            mappings.Add(key, Translated);
+            mappings.Add(key, mappingFunction);
 
             return new Mapping<TFrom, TTo>(mapping);
         }

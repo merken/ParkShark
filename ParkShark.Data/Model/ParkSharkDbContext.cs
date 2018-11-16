@@ -30,7 +30,7 @@ namespace ParkShark.Data.Model
 
             modelBuilder.Entity<Division>()
                 .HasOne(d => d.ParentDivision)
-                .WithMany()
+                .WithMany(d=>d.SubDivisions)
                 .HasForeignKey(d => d.ParentDivisionId);
 
             modelBuilder.Entity<ParkingLot>()
