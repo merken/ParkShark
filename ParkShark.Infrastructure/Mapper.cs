@@ -29,8 +29,8 @@ namespace ParkShark.Infrastructure
     public class Mapping<T1, T2> where T1 : class
         where T2 : class
     {
-        private readonly Func<T1, T2> mapping;
-        public Mapping(Func<T1, T2> mapping)
+        private readonly Func<T1, Mapper, T2> mapping;
+        public Mapping(Func<T1, Mapper, T2> mapping)
         {
             this.mapping = mapping;
         }
@@ -52,7 +52,7 @@ namespace ParkShark.Infrastructure
         /// <typeparam name="TFrom">Type A</typeparam>
         /// <typeparam name="TTo">Type B</typeparam>
         /// <param name="mapping">The actual mapping code</param>
-        public Mapping<TFrom, TTo> CreateMap<TFrom, TTo>(Func<TFrom, TTo> mapping) where TFrom : class
+        public Mapping<TFrom, TTo> CreateMap<TFrom, TTo>(Func<TFrom, Mapper, TTo> mapping) where TFrom : class
             where TTo : class
         {
             var fromType = typeof(TFrom);
@@ -67,7 +67,7 @@ namespace ParkShark.Infrastructure
                 throw new NotSupportedException($"Mapping from {fromType.Name} to {toType.Name} already in registry.");
 
             //func translation
-            object Translated(object a) => mapping(a as TFrom);
+            object Translated(object a) => mapping(a as TFrom, this);
 
             mappings.Add(key, Translated);
 
@@ -81,7 +81,7 @@ namespace ParkShark.Infrastructure
         /// <typeparam name="TFrom">The input type</typeparam>
         /// <param name="from">The input object, TFrom</param>
         /// <returns>A type TTo object, in case mapping was successful</returns>
-        public TTo MapTo<TTo, TFrom>(TFrom from) 
+        public TTo MapTo<TTo, TFrom>(TFrom from)
             where TTo : class
             where TFrom : class
         {

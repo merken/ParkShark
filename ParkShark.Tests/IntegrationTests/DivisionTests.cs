@@ -17,8 +17,8 @@ namespace ParkShark.Tests.IntegrationTests
         {
             base.ConfigureMappings(mapper);
 
-            mapper.CreateMap<CreateDivisionDto, Division>((dto) => new Division(dto.Name, dto.OriginalName, dto.Director));
-            mapper.CreateMap<Division, DivisionDto>((division) => new DivisionDto
+            mapper.CreateMap<CreateDivisionDto, Division>((dto, m) => new Division(dto.Name, dto.OriginalName, dto.Director));
+            mapper.CreateMap<Division, DivisionDto>((division, m) => new DivisionDto
             {
                 Id = division.Id,
                 Name = division.Name,
@@ -26,7 +26,7 @@ namespace ParkShark.Tests.IntegrationTests
                 Director = division.Director,
                 ParentDivisionId = division.ParentDivisionId
             });
-            mapper.CreateMap<CreateSubDivisionDto, Division>((dto) => new Division(dto.Name, dto.OriginalName, dto.Director, dto.ParentDivisionId));
+            mapper.CreateMap<CreateSubDivisionDto, Division>((dto, m) => new Division(dto.Name, dto.OriginalName, dto.Director, dto.ParentDivisionId));
         }
 
         [TestMethod]

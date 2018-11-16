@@ -11,6 +11,8 @@ namespace ParkShark.Data.Model
     public class ParkSharkDbContext : DbContext
     {
         public virtual DbSet<Division> Divisions { get; set; }
+        public virtual DbSet<Contact> Contacts { get; set; }
+        public virtual DbSet<ParkingLot> ParkingLots { get; set; }
 
         public ParkSharkDbContext(DbContextOptions options) : base(options)
         {
@@ -37,7 +39,7 @@ namespace ParkShark.Data.Model
 
             modelBuilder.Entity<ParkingLot>()
                 .Property(p => p.BuildingType)
-                .HasConversion<EnumToStringConverter<BuildingType>>();
+                .HasConversion<string>();
 
             modelBuilder.Entity<ParkingLot>()
                 .HasOne(p => p.Division)

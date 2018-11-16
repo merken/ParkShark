@@ -52,8 +52,8 @@ namespace ParkShark.Web
 
         protected virtual void ConfigureMappings(Mapper mapper)
         {
-            mapper.CreateMap<CreateDivisionDto, Division>((dto) => new Division(dto.Name, dto.OriginalName, dto.Director));
-            mapper.CreateMap<Division, DivisionDto>((division) => new DivisionDto
+            mapper.CreateMap<CreateDivisionDto, Division>((dto, m) => new Division(dto.Name, dto.OriginalName, dto.Director));
+            mapper.CreateMap<Division, DivisionDto>((division, m) => new DivisionDto
             {
                 Id = division.Id,
                 Name = division.Name,
@@ -61,7 +61,57 @@ namespace ParkShark.Web
                 Director = division.Director,
                 ParentDivisionId = division.ParentDivisionId
             });
-            mapper.CreateMap<CreateSubDivisionDto, Division>((dto) => new Division(dto.Name, dto.OriginalName, dto.Director, dto.ParentDivisionId));
+            mapper.CreateMap<CreateSubDivisionDto, Division>((dto, m) => new Division(dto.Name, dto.OriginalName, dto.Director, dto.ParentDivisionId));
+
+            mapper.CreateMap<CreateNewParkingLotDto, ParkingLot>((dto, m) =>
+            {
+                var buildingTypeParsed = (BuildingType)Enum.Parse(typeof(BuildingType), dto.BuildingType);
+                var address = new Address(dto.ContactStreet, dto.ContactStreetNumber, dto.ContactPostalCode,
+                    dto.ContactPostalName);
+                var contact = new Contact(dto.ContactName, dto.ContactMobilePhone, dto.ContactPhone, dto.ContactEmail,
+                    address);
+
+                return new ParkingLot(dto.Name, dto.DivisionId, contact, buildingTypeParsed, dto.PricePerHour, dto.Capacity);
+            });
+
+            mapper.CreateMap<Address, AddressDto>((address, m) => new AddressDto
+            {
+                Street = address.Street,
+                StreetNumber = address.StreetNumber,
+                PostalCode = address.PostalCode,
+                PostalName = address.PostalName
+            });
+
+            mapper.CreateMap<Contact, ContactDto>((contact, m) =>
+            {
+                var addressDto = m.MapTo<AddressDto, Address>(contact.Address);
+                return new ContactDto
+                {
+                    Id = contact.Id,
+                    Email = contact.Email,
+                    MobilePhone = contact.MobilePhone,
+                    Name = contact.Name,
+                    Phone = contact.Phone,
+                    Address = addressDto
+                };
+            });
+
+            mapper.CreateMap<ParkingLot, ParkingLotDto>((parkingLot, m) =>
+            {
+                var divisionDto = parkingLot.Division != null ? m.MapTo<DivisionDto, Division>(parkingLot.Division) : null;
+                var contactDto = parkingLot.Contact != null ? m.MapTo<ContactDto, Contact>(parkingLot.Contact) : null;
+
+                return new ParkingLotDto
+                {
+                    Id = parkingLot.Id,
+                    Name = parkingLot.Name,
+                    Division = divisionDto,
+                    Contact = contactDto,
+                    BuildingType = parkingLot.BuildingType.ToString(),
+                    Capacity = parkingLot.Capacity,
+                    PricePerHour = parkingLot.PricePerHour
+                };
+            });
         }
 
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.

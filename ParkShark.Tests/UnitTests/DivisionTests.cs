@@ -19,8 +19,8 @@ namespace ParkShark.Tests.UnitTests
         {
             mapper = new Mapper();
             //Mappings for DTO and Entity
-            mapper.CreateMap<CreateDivisionDto, Division>((dto) => new Division(dto.Name, dto.OriginalName, dto.Director));
-            mapper.CreateMap<Division, DivisionDto>((division) => new DivisionDto
+            mapper.CreateMap<CreateDivisionDto, Division>((dto, m) => new Division(dto.Name, dto.OriginalName, dto.Director));
+            mapper.CreateMap<Division, DivisionDto>((division, m) => new DivisionDto
             {
                 Id = division.Id,
                 Name = division.Name,
@@ -28,7 +28,7 @@ namespace ParkShark.Tests.UnitTests
                 Director = division.Director,
                 ParentDivisionId = division.ParentDivisionId
             });
-            mapper.CreateMap<CreateSubDivisionDto, Division>((dto) => new Division(dto.Name, dto.OriginalName, dto.Director, dto.ParentDivisionId));
+            mapper.CreateMap<CreateSubDivisionDto, Division>((dto, m) => new Division(dto.Name, dto.OriginalName, dto.Director, dto.ParentDivisionId));
         }
 
         [TestMethod]
