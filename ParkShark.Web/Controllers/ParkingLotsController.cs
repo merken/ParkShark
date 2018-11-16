@@ -34,6 +34,14 @@ namespace ParkShark.Web.Controllers
             return Ok(this.mapper.MapToList<ParkingLotDto, ParkingLot>(parkingLots));
         }
 
+        [HttpGet]
+        [Route("{id:int}")]
+        public async Task<ActionResult<ParkingLotDto>> GetParkingLot(int id)
+        {
+            var parkingLot = await this.service.GetParkingLot(id);
+            return Ok(this.mapper.MapTo<ParkingLotDto, ParkingLot>(parkingLot));
+        }
+
         [HttpPost]
         public async Task<ActionResult<ParkingLotDto>> CreateNewParkingLot(CreateNewParkingLotDto createNewParkingLotDto)
         {

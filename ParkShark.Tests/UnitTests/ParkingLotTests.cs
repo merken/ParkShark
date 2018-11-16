@@ -167,5 +167,54 @@ namespace ParkShark.Tests.UnitTests
             }
         }
 
+        [TestMethod]
+        public async Task ParkingLotShouldBeReturned()
+        {
+            using (var context = NewInMemoryParkSharkDbContext())
+            {
+                //Setup test data
+                var division = new Division("Apple", "Apple Computer", "Steve Jobs");
+                await context.Divisions.AddAsync(division);
+                var parkingLot1 = new ParkingLot(
+                    "PL1",
+                    division.Id,
+                    new Contact("Maarten", "00554433", null, "merken.maarten@gmail.com",
+                        new Address("Streety", "Numbery", "Codey", "Namey")),
+                    BuildingType.Underground,
+                    15.55m,
+                    500
+                );
+                await context.ParkingLots.AddAsync(parkingLot1);
+                var parkingLot2 = new ParkingLot(
+                    "PL2",
+                    division.Id,
+                    new Contact("John", "005777433", null, "john.doe@gmail.com",
+                        new Address("Streety2", "Numbery3", "Codey4", "Namey5")),
+                    BuildingType.Underground,
+                    15.55m,
+                    500
+                );
+                await context.ParkingLots.AddAsync(parkingLot2);
+                await context.SaveChangesAsync();
+
+                var parkingLotService = new ParkingLotService(context);
+
+                var controller = new ParkingLotsController(mapper, parkingLotService);
+                var parkingLot1Result = GetResult<ParkingLotDto>((await controller.GetParkingLot(parkingLot1.Id)));
+                var parkingLot2Result = GetResult<ParkingLotDto>((await controller.GetParkingLot(parkingLot2.Id)));
+
+                Assert.AreEqual(parkingLot1.Name, parkingLot1Result.Name);
+                Assert.AreEqual(parkingLot1.Capacity, parkingLot1Result.Capacity);
+                Assert.AreEqual(parkingLot1.BuildingType.ToString(), parkingLot1Result.BuildingType);
+                Assert.AreEqual(parkingLot1.Contact.Email, parkingLot1Result.Contact.Email);
+                Assert.AreEqual(parkingLot1.Contact.Address.Street, parkingLot1Result.Contact.Address.Street);
+
+                Assert.AreEqual(parkingLot2.Name, parkingLot2Result.Name);
+                Assert.AreEqual(parkingLot2.Capacity, parkingLot2Result.Capacity);
+                Assert.AreEqual(parkingLot2.BuildingType.ToString(), parkingLot2Result.BuildingType);
+                Assert.AreEqual(parkingLot2.Contact.Email, parkingLot2Result.Contact.Email);
+                Assert.AreEqual(parkingLot2.Contact.Address.Street, parkingLot2Result.Contact.Address.Street);
+            }
+        }
     }
 }

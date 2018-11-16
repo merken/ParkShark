@@ -15,6 +15,7 @@ namespace ParkShark.Services
     {
         Task<ParkingLot> CreateNewParkingLot(ParkingLot parkingLot);
         Task<IEnumerable<ParkingLot>> GetAllParkingLots();
+        Task<ParkingLot> GetParkingLot(int id);
     }
 
     public class ParkingLotService : IParkingLotService
@@ -48,5 +49,15 @@ namespace ParkShark.Services
                 .AsNoTracking()
                 .ToListAsync();
         }
+
+        public async Task<ParkingLot> GetParkingLot(int id)
+        {
+            return await context.ParkingLots
+                .Include(p => p.Division)
+                .Include(p => p.Contact)
+                .AsNoTracking()
+                .FirstOrDefaultAsync(p => p.Id == id);
+        }
+
     }
 }

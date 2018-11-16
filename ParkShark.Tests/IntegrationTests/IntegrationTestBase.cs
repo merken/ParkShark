@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Data.Common;
 using System.Data.SqlClient;
 using System.IO;
+using System.Linq;
 using System.Net.Http;
 using System.Text;
 using System.Threading.Tasks;
@@ -79,15 +80,21 @@ namespace ParkShark.Tests.IntegrationTests
 
             if (divisions != null)
             {
-                context.Divisions.AddRange(divisions);
+                foreach (var division in divisions.OrderBy(d => d.Name))
+                {
+                    context.Divisions.Add(division);
+                    context.SaveChanges();
+                }
             }
 
             if (parkingLots != null)
             {
-                context.ParkingLots.AddRange(parkingLots);
+                foreach (var parkingLot in parkingLots.OrderBy(p => p.Name))
+                {
+                    context.ParkingLots.Add(parkingLot);
+                    context.SaveChanges();
+                }
             }
-
-            context.SaveChanges();
         }
 
         protected async Task RunWithinTransactionAndRollBack(Func<HttpClient, Task> codeToRun)

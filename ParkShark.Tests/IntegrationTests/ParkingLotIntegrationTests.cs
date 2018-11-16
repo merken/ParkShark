@@ -138,5 +138,23 @@ namespace ParkShark.Tests.IntegrationTests
                 Assert.AreNotEqual(default(int), parkingLot.Id);
             });
         }
+
+        [TestMethod]
+        public async Task ParkingLotShouldBeReturned()
+        {
+            await RunWithinTransactionAndRollBack(async (client) =>
+            {
+                var parkingLot1Response = await client.GetAsync("api/parkinglots/1");
+                var parkingLot1 = await DeserializeAsAsync<ParkingLotDto>(parkingLot1Response.Content);
+                var parkingLot2Response = await client.GetAsync("api/parkinglots/2");
+                var parkingLot2 = await DeserializeAsAsync<ParkingLotDto>(parkingLot2Response.Content);
+
+                Assert.AreEqual("PL1", parkingLot1.Name);
+                Assert.AreEqual("merken.maarten@gmail.com", parkingLot1.Contact.Email);
+                Assert.AreEqual("PL2", parkingLot2.Name);
+                Assert.AreEqual("john.doe@gmail.com", parkingLot2.Contact.Email);
+            });
+        }
+
     }
 }
