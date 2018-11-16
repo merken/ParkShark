@@ -10,5 +10,43 @@
       "director": "Steve Flops",
       "originalName": "IBM"
     }
+  ],
+  "parkinglots": [
+    {
+      "name": "PL1",
+      "divisionId": "1",
+      "buildingType": "Underground",
+      "capacity": "500",
+      "pricePerHour": "15.55",
+      "contact": {
+        "name": "Maarten Merken",
+        "mobilePhone": "00486743685",
+        "email": "merken.maarten@gmail.com",
+        "address": {
+          "street": "Aardeweg",
+          "streetNumber": "39",
+          "postalCode": "3582",
+          "postalName": "Koersel"
+        }
+      }
+    },
+    {
+      "name": "PL2",
+      "divisionId": "1",
+      "buildingType": "Aboveground",
+      "capacity": "100",
+      "pricePerHour": "9.99",
+      "contact": {
+        "name": "John Doe",
+        "mobilePhone": "0049993685",
+        "email": "john.doe@gmail.com",
+        "address": {
+          "street": "Downing st",
+          "streetNumber": "55",
+          "postalCode": "1000",
+          "postalName": "Brussel"
+        }
+      }
+    }
   ]
 }

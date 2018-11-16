@@ -11,7 +11,7 @@ using ParkShark.Web.DTO;
 namespace ParkShark.Tests.IntegrationTests
 {
     [TestClass]
-    public class DivisionTests : IntegrationTestBase
+    public class DivisionIntegrationTests : IntegrationTestBase
     {
         protected override void ConfigureMappings(Mapper mapper)
         {
@@ -89,9 +89,9 @@ namespace ParkShark.Tests.IntegrationTests
                 var divisionsResponse = await client.GetAsync("api/divisions/1");
                 var division = await DeserializeAsAsync<DivisionDto>(divisionsResponse.Content);
 
-                Assert.AreEqual("Apple", division.Name);
-                Assert.AreEqual("Apple Computer", division.OriginalName);
-                Assert.AreEqual("Steve Jobs", division.Director);
+                Assert.AreEqual("International Brol Machinekes", division.Name);
+                Assert.AreEqual("IBM", division.OriginalName);
+                Assert.AreEqual("Steve Flops", division.Director);
             });
         }
 

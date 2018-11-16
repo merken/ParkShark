@@ -65,6 +65,7 @@ namespace ParkShark.Services
             var divisions = await context.Divisions
                 .Include(d => d.SubDivisions)
                 .Where(d => d.ParentDivisionId == null)
+                .OrderBy(d => d.Id)
                 .AsNoTracking()
                 .ToListAsync();
 

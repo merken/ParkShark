@@ -25,6 +25,7 @@ namespace ParkShark.Tests.IntegrationTests
     class TestData
     {
         public List<Division> Divisions { get; set; }
+        public List<ParkingLot> ParkingLots { get; set; }
     }
 
     [TestClass]
@@ -57,20 +58,33 @@ namespace ParkShark.Tests.IntegrationTests
         private static void PurgeDbAndAddTestDataFromFile(ParkSharkDbContext context)
         {
             List<Division> divisions = null;
+            List<ParkingLot> parkingLots = null;
 
             using (StreamReader reader = new StreamReader(@"testdata.json"))
             {
                 string json = reader.ReadToEnd();
                 var testData = JsonConvert.DeserializeObject<TestData>(json);
                 divisions = testData.Divisions;
+                parkingLots = testData.ParkingLots;
             }
 
             context.Divisions.RemoveRange(context.Divisions);
+            context.Contacts.RemoveRange(context.Contacts);
+            context.ParkingLots.RemoveRange(context.ParkingLots);
+            context.SaveChanges();
+
+            ReseedIdentity(context, "Divisions");
+            ReseedIdentity(context, "Contacts");
+            ReseedIdentity(context, "ParkingLots");
 
             if (divisions != null)
             {
                 context.Divisions.AddRange(divisions);
-                ReseedIdentity(context, "Divisions");
+            }
+
+            if (parkingLots != null)
+            {
+                context.ParkingLots.AddRange(parkingLots);
             }
 
             context.SaveChanges();

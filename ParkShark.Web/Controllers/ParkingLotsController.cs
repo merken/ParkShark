@@ -27,12 +27,12 @@ namespace ParkShark.Web.Controllers
             this.service = service;
         }
 
-        //[HttpGet]
-        //public async Task<ActionResult<IEnumerable<DivisionDto>>> GetDivisions()
-        //{
-        //    var divisions = await this.service.GetAllDivisions();
-        //    return Ok(this.mapper.MapToList<DivisionDto, Division>(divisions));
-        //}
+        [HttpGet]
+        public async Task<ActionResult<IEnumerable<ParkingLotDto>>> GetParkingLots()
+        {
+            var parkingLots = await this.service.GetAllParkingLots();
+            return Ok(this.mapper.MapToList<ParkingLotDto, ParkingLot>(parkingLots));
+        }
 
         [HttpPost]
         public async Task<ActionResult<ParkingLotDto>> CreateNewParkingLot(CreateNewParkingLotDto createNewParkingLotDto)

@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
@@ -50,6 +51,27 @@ namespace ParkShark.Tests.UnitTests
                     Name = contact.Name,
                     Phone = contact.Phone,
                     Address = addressDto
+                };
+            });
+
+            mapper.CreateMap<Division, DivisionDto>((division, m) =>
+            {
+                var subDivisions = division.SubDivisions;
+
+                var subDivisionDtos = new List<DivisionDto>();
+                foreach (var subDivision in subDivisions)
+                {
+                    subDivisionDtos.Add(m.MapTo<DivisionDto, Division>(subDivision));
+                }
+
+                return new DivisionDto
+                {
+                    Id = division.Id,
+                    Name = division.Name,
+                    OriginalName = division.OriginalName,
+                    Director = division.Director,
+                    ParentDivisionId = division.ParentDivisionId,
+                    SubDivisions = subDivisionDtos
                 };
             });
 
@@ -105,5 +127,45 @@ namespace ParkShark.Tests.UnitTests
                 Assert.AreEqual(contactInDb.Address.Street, contactInDb.Address.Street);
             }
         }
+
+        [TestMethod]
+        public async Task ParkingLotsShouldBeReturned()
+        {
+            using (var context = NewInMemoryParkSharkDbContext())
+            {
+                //Setup test data
+                var division = new Division("Apple", "Apple Computer", "Steve Jobs");
+                await context.Divisions.AddAsync(division);
+                await context.ParkingLots.AddAsync(new ParkingLot(
+                    "PL1",
+                    division.Id,
+                    new Contact("Maarten", "00554433", null, "merken.maarten@gmail.com", new Address("Streety", "Numbery", "Codey", "Namey")),
+                    BuildingType.Underground,
+                    15.55m,
+                    500
+                ));
+                await context.ParkingLots.AddAsync(new ParkingLot(
+                    "PL2",
+                    division.Id,
+                    new Contact("John", "005777433", null, "john.doe@gmail.com", new Address("Streety2", "Numbery3", "Codey4", "Namey5")),
+                    BuildingType.Underground,
+                    15.55m,
+                    500
+                ));
+                await context.SaveChangesAsync();
+
+                var parkingLotService = new ParkingLotService(context);
+
+                var controller = new ParkingLotsController(mapper, parkingLotService);
+                var parkingLots = GetResult<IEnumerable<ParkingLotDto>>((await controller.GetParkingLots()));
+
+                Assert.AreEqual(2, parkingLots.Count());
+                Assert.AreEqual(parkingLots.ElementAt(0).Name, "PL1");
+                Assert.AreEqual(parkingLots.ElementAt(1).Name, "PL2");
+
+
+            }
+        }
+
     }
 }
