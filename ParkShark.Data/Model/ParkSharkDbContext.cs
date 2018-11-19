@@ -13,6 +13,7 @@ namespace ParkShark.Data.Model
         public virtual DbSet<Division> Divisions { get; set; }
         public virtual DbSet<Contact> Contacts { get; set; }
         public virtual DbSet<ParkingLot> ParkingLots { get; set; }
+        public virtual DbSet<Member> Members { get; set; }
 
         public ParkSharkDbContext(DbContextOptions options) : base(options)
         {
@@ -68,6 +69,22 @@ namespace ParkShark.Data.Model
                         contact.Property(c => c.StreetNumber).HasColumnName("StreetNumber");
                         contact.Property(c => c.PostalCode).HasColumnName("PostalCode");
                         contact.Property(c => c.PostalName).HasColumnName("PostalName");
+                    });
+
+            modelBuilder.Entity<Member>()
+                .HasKey(m => m.Id);
+
+            modelBuilder.Entity<Member>()
+                .HasOne(m => m.Contact)
+                .WithMany()
+                .HasForeignKey(m => m.ContactId);
+
+            modelBuilder.Entity<Member>()
+                .OwnsOne(m=>m.LicensePlate,
+                    licensePlate =>
+                    {
+                        licensePlate.Property(c => c.Country).HasColumnName("LicensePlateNumber");
+                        licensePlate.Property(c => c.Number).HasColumnName("LicensePlateCountry");
                     });
 
             base.OnModelCreating(modelBuilder);

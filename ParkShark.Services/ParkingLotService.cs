@@ -32,7 +32,7 @@ namespace ParkShark.Services
             await context.ParkingLots.AddAsync(parkingLot);
 
             if (await context.SaveChangesAsync() == 0)
-                throw new PersistenceException("Division was not created");
+                throw new PersistenceException("ParkingLot was not created");
 
             await context.Entry(parkingLot).Reference(p => p.Division).LoadAsync();
             await context.Entry(parkingLot).Reference(p => p.Contact).LoadAsync();

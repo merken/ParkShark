@@ -222,6 +222,37 @@ namespace ParkShark.Tests.IntegrationTests
                     PricePerHour = parkingLot.PricePerHour
                 };
             });
+
+            mapper.CreateMap<CreateNewMemberDto, Member>((dto, m) =>
+            {
+                var address = new Address(dto.ContactStreet, dto.ContactStreetNumber, dto.ContactPostalCode,
+                    dto.ContactPostalName);
+                var contact = new Contact(dto.ContactName, dto.ContactMobilePhone, dto.ContactPhone, dto.ContactEmail,
+                    address);
+                var licensePlace = new LicensePlate(dto.LicensePlateNumber, dto.LicensePlateCountry);
+
+                return new Member(contact, licensePlace, dto.RegistrationDate);
+            });
+
+            mapper.CreateMap<LicensePlate, LicensePlateDto>((licensePlate, m) => new LicensePlateDto
+            {
+                Country = licensePlate.Country,
+                Number = licensePlate.Number
+            });
+
+            mapper.CreateMap<Member, MemberDto>((member, m) =>
+            {
+                var contactDto = member.Contact != null ? m.MapTo<ContactDto, Contact>(member.Contact) : null;
+                var licensePlateDto = member.LicensePlate != null ? m.MapTo<LicensePlateDto, LicensePlate>(member.LicensePlate) : null;
+
+                return new MemberDto
+                {
+                    Id = member.Id,
+                    Contact = contactDto,
+                    LicensePlate = licensePlateDto,
+                    RegistrationDate = member.RegistrationDate
+                };
+            });
         }
 
         /// <summary>
