@@ -52,3 +52,5 @@ GO
 ALTER TABLE [dbo].[ParkingLots] CHECK CONSTRAINT [FK_ParkingLots_Divisions]
 GO
 
+ALTER TABLE [dbo].[ParkingLots] ADD [Capacity] [decimal](18, 2) NOT NULL
+GO

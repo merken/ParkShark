@@ -77,13 +77,12 @@ namespace ParkShark.Web
 
             mapper.CreateMap<CreateNewParkingLotDto, ParkingLot>((dto, m) =>
             {
-                var buildingTypeParsed = (BuildingType)Enum.Parse(typeof(BuildingType), dto.BuildingType);
                 var address = new Address(dto.ContactStreet, dto.ContactStreetNumber, dto.ContactPostalCode,
                     dto.ContactPostalName);
                 var contact = new Contact(dto.ContactName, dto.ContactMobilePhone, dto.ContactPhone, dto.ContactEmail,
                     address);
 
-                return new ParkingLot(dto.Name, dto.DivisionId, contact, buildingTypeParsed, dto.PricePerHour, dto.Capacity);
+                return new ParkingLot(dto.Name, dto.DivisionId, contact, dto.BuildingTypeId, dto.PricePerHour, dto.Capacity);
             });
 
             mapper.CreateMap<Address, AddressDto>((address, m) => new AddressDto
@@ -108,18 +107,26 @@ namespace ParkShark.Web
                 };
             });
 
+            mapper.CreateMap<BuildingType, BuildingTypeDto>((buildingType, m) => new BuildingTypeDto
+            {
+                Id = buildingType.Id,
+                Name = buildingType.Name
+            });
+
             mapper.CreateMap<ParkingLot, ParkingLotDto>((parkingLot, m) =>
             {
                 var divisionDto = parkingLot.Division != null ? m.MapTo<DivisionDto, Division>(parkingLot.Division) : null;
                 var contactDto = parkingLot.Contact != null ? m.MapTo<ContactDto, Contact>(parkingLot.Contact) : null;
-
+                var buildingTypeDto = parkingLot.BuildingType != null
+                    ? m.MapTo<BuildingTypeDto, BuildingType>(parkingLot.BuildingType)
+                    : null;
                 return new ParkingLotDto
                 {
                     Id = parkingLot.Id,
                     Name = parkingLot.Name,
                     Division = divisionDto,
                     Contact = contactDto,
-                    BuildingType = parkingLot.BuildingType.ToString(),
+                    BuildingType = buildingTypeDto,
                     Capacity = parkingLot.Capacity,
                     PricePerHour = parkingLot.PricePerHour
                 };

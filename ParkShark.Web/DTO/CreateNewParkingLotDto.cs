@@ -9,7 +9,7 @@ namespace ParkShark.Web.DTO
     {
         public string Name { get; set; }
         public int DivisionId { get; set; }
-        public string BuildingType { get; set; }
+        public int BuildingTypeId { get; set; }
         public decimal Capacity { get; set; }
         public decimal PricePerHour { get; set; }
         public string ContactName { get; set; }

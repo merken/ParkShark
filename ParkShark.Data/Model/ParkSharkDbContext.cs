@@ -33,13 +33,18 @@ namespace ParkShark.Data.Model
                 .WithMany(d=>d.SubDivisions)
                 .HasForeignKey(d => d.ParentDivisionId);
 
+            modelBuilder.Entity<BuildingType>()
+                .ToTable("BuildingTypes")
+                .HasKey(b => b.Id);
+
             modelBuilder.Entity<ParkingLot>()
                 .ToTable("ParkingLots")
                 .HasKey(p => p.Id);
 
             modelBuilder.Entity<ParkingLot>()
-                .Property(p => p.BuildingType)
-                .HasConversion<string>();
+                .HasOne(p => p.BuildingType)
+                .WithMany()
+                .HasForeignKey(p => p.BuildingTypeId);
 
             modelBuilder.Entity<ParkingLot>()
                 .HasOne(p => p.Division)

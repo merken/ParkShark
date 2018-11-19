@@ -11,7 +11,7 @@ namespace ParkShark.Web.DTO
         public string Name { get; set; }
         public DivisionDto Division { get; set; }
         public ContactDto Contact { get; set; }
-        public string BuildingType { get; set; }
+        public BuildingTypeDto BuildingType { get; set; }
         public decimal PricePerHour { get; set; }
         public decimal Capacity { get; set; }
     }

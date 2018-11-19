@@ -20,12 +20,14 @@ using ParkShark.Data.Model;
 using ParkShark.Domain;
 using ParkShark.Infrastructure;
 using ParkShark.Web;
+using ParkShark.Web.DTO;
 
 namespace ParkShark.Tests.IntegrationTests
 {
     class TestData
     {
         public List<Division> Divisions { get; set; }
+        public List<BuildingType> BuildingTypes { get; set; }
         public List<ParkingLot> ParkingLots { get; set; }
     }
 
@@ -59,6 +61,7 @@ namespace ParkShark.Tests.IntegrationTests
         private static void PurgeDbAndAddTestDataFromFile(ParkSharkDbContext context)
         {
             List<Division> divisions = null;
+            List<BuildingType> buildingTypes = null;
             List<ParkingLot> parkingLots = null;
 
             using (StreamReader reader = new StreamReader(@"testdata.json"))
@@ -66,15 +69,18 @@ namespace ParkShark.Tests.IntegrationTests
                 string json = reader.ReadToEnd();
                 var testData = JsonConvert.DeserializeObject<TestData>(json);
                 divisions = testData.Divisions;
+                buildingTypes = testData.BuildingTypes;
                 parkingLots = testData.ParkingLots;
             }
 
             context.Divisions.RemoveRange(context.Divisions);
+            context.Set<BuildingType>().RemoveRange(context.Set<BuildingType>());
             context.Contacts.RemoveRange(context.Contacts);
             context.ParkingLots.RemoveRange(context.ParkingLots);
             context.SaveChanges();
 
             ReseedIdentity(context, "Divisions");
+            ReseedIdentity(context, "BuildingTypes");
             ReseedIdentity(context, "Contacts");
             ReseedIdentity(context, "ParkingLots");
 
@@ -83,6 +89,15 @@ namespace ParkShark.Tests.IntegrationTests
                 foreach (var division in divisions.OrderBy(d => d.Name))
                 {
                     context.Divisions.Add(division);
+                    context.SaveChanges();
+                }
+            }
+
+            if (buildingTypes != null)
+            {
+                foreach (var buildingType in buildingTypes)
+                {
+                    context.Set<BuildingType>().Add(buildingType);
                     context.SaveChanges();
                 }
             }
@@ -126,6 +141,87 @@ namespace ParkShark.Tests.IntegrationTests
 
         protected virtual void ConfigureMappings(Mapper mapper)
         {
+            mapper.CreateMap<CreateDivisionDto, Division>((dto, m) => new Division(dto.Name, dto.OriginalName, dto.Director));
+            
+            mapper.CreateMap<CreateSubDivisionDto, Division>((dto, m) => new Division(dto.Name, dto.OriginalName, dto.Director, dto.ParentDivisionId));
+
+            mapper.CreateMap<CreateNewParkingLotDto, ParkingLot>((dto, m) =>
+            {
+                var address = new Address(dto.ContactStreet, dto.ContactStreetNumber, dto.ContactPostalCode,
+                    dto.ContactPostalName);
+                var contact = new Contact(dto.ContactName, dto.ContactMobilePhone, dto.ContactPhone, dto.ContactEmail,
+                    address);
+
+                return new ParkingLot(dto.Name, dto.DivisionId, contact, dto.BuildingTypeId, dto.PricePerHour, dto.Capacity);
+            });
+
+            mapper.CreateMap<Address, AddressDto>((address, m) => new AddressDto
+            {
+                Street = address.Street,
+                StreetNumber = address.StreetNumber,
+                PostalCode = address.PostalCode,
+                PostalName = address.PostalName
+            });
+
+            mapper.CreateMap<Contact, ContactDto>((contact, m) =>
+            {
+                var addressDto = m.MapTo<AddressDto, Address>(contact.Address);
+                return new ContactDto
+                {
+                    Id = contact.Id,
+                    Email = contact.Email,
+                    MobilePhone = contact.MobilePhone,
+                    Name = contact.Name,
+                    Phone = contact.Phone,
+                    Address = addressDto
+                };
+            });
+
+            mapper.CreateMap<BuildingType, BuildingTypeDto>((buildingType, m) => new BuildingTypeDto
+            {
+                Id = buildingType.Id,
+                Name = buildingType.Name
+            });
+
+            mapper.CreateMap<Division, DivisionDto>((division, m) =>
+            {
+                var subDivisions = division.SubDivisions;
+
+                var subDivisionDtos = new List<DivisionDto>();
+                foreach (var subDivision in subDivisions)
+                {
+                    subDivisionDtos.Add(m.MapTo<DivisionDto, Division>(subDivision));
+                }
+
+                return new DivisionDto
+                {
+                    Id = division.Id,
+                    Name = division.Name,
+                    OriginalName = division.OriginalName,
+                    Director = division.Director,
+                    ParentDivisionId = division.ParentDivisionId,
+                    SubDivisions = subDivisionDtos
+                };
+            });
+
+            mapper.CreateMap<ParkingLot, ParkingLotDto>((parkingLot, m) =>
+            {
+                var divisionDto = parkingLot.Division != null ? m.MapTo<DivisionDto, Division>(parkingLot.Division) : null;
+                var contactDto = parkingLot.Contact != null ? m.MapTo<ContactDto, Contact>(parkingLot.Contact) : null;
+                var buildingTypeDto = parkingLot.BuildingType != null
+                    ? m.MapTo<BuildingTypeDto, BuildingType>(parkingLot.BuildingType)
+                    : null;
+                return new ParkingLotDto
+                {
+                    Id = parkingLot.Id,
+                    Name = parkingLot.Name,
+                    Division = divisionDto,
+                    Contact = contactDto,
+                    BuildingType = buildingTypeDto,
+                    Capacity = parkingLot.Capacity,
+                    PricePerHour = parkingLot.PricePerHour
+                };
+            });
         }
 
         /// <summary>

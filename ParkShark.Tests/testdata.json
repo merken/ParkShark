@@ -11,11 +11,21 @@
       "originalName": "IBM"
     }
   ],
+
+  "buildingTypes": [
+    {
+      "name": "Underground"
+    },
+    {
+      "name": "Aboveground"
+    }
+  ],
+
   "parkinglots": [
     {
       "name": "PL1",
       "divisionId": "1",
-      "buildingType": "Underground",
+      "buildingTypeId": 1,
       "capacity": "500",
       "pricePerHour": "15.55",
       "contact": {
@@ -33,7 +43,7 @@
     {
       "name": "PL2",
       "divisionId": "1",
-      "buildingType": "Aboveground",
+      "buildingTypeId": 2,
       "capacity": "100",
       "pricePerHour": "9.99",
       "contact": {

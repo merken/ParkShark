@@ -6,13 +6,6 @@ using ParkShark.Domain.Exceptions;
 
 namespace ParkShark.Domain
 {
-    public enum BuildingType
-    {
-        None = 0,
-        Underground,
-        Aboveground
-    }
-
     public class Address
     {
         public Address()
@@ -97,7 +90,7 @@ namespace ParkShark.Domain
         {
         }
 
-        public ParkingLot(string name, int divisionId, int contactId, BuildingType buildingType, decimal pricePerHour)
+        public ParkingLot(string name, int divisionId, int contactId, int buildingTypeId, decimal pricePerHour)
         {
             if (String.IsNullOrEmpty(name))
             {
@@ -114,9 +107,9 @@ namespace ParkShark.Domain
                 throw new ValidationException<ParkingLot>("contactId is required");
             }
 
-            if (buildingType == BuildingType.None)
+            if (default(int) == buildingTypeId)
             {
-                throw new ValidationException<ParkingLot>("buildingType cannot be None");
+                throw new ValidationException<ParkingLot>("buildingTypeId is required");
             }
 
             if (default(decimal) == pricePerHour)
@@ -127,11 +120,11 @@ namespace ParkShark.Domain
             this.Name = name;
             this.DivisionId = divisionId;
             this.ContactId = contactId;
-            this.BuildingType = buildingType;
+            this.BuildingTypeId = buildingTypeId;
             this.PricePerHour = pricePerHour;
         }
 
-        public ParkingLot(string name, int divisionId, Contact newContact, BuildingType buildingType, decimal pricePerHour, decimal capacity)
+        public ParkingLot(string name, int divisionId, Contact newContact, int buildingTypeId, decimal pricePerHour, decimal capacity)
         {
             if (String.IsNullOrEmpty(name))
             {
@@ -148,9 +141,9 @@ namespace ParkShark.Domain
                 throw new ValidationException<ParkingLot>("newContact is required");
             }
 
-            if (buildingType == BuildingType.None)
+            if (default(int) == buildingTypeId)
             {
-                throw new ValidationException<ParkingLot>("buildingType cannot be None");
+                throw new ValidationException<ParkingLot>("buildingTypeId is required");
             }
 
             if (default(decimal) == pricePerHour)
@@ -166,7 +159,7 @@ namespace ParkShark.Domain
             this.Name = name;
             this.DivisionId = divisionId;
             this.Contact = newContact;
-            this.BuildingType = buildingType;
+            this.BuildingTypeId = buildingTypeId;
             this.PricePerHour = pricePerHour;
             this.Capacity = capacity;
         }
@@ -177,6 +170,7 @@ namespace ParkShark.Domain
         public Division Division { get; private set; }
         public int ContactId { get; set; }
         public Contact Contact { get; set; }
+        public int BuildingTypeId { get; set; }
         public BuildingType BuildingType { get; set; }
         public decimal PricePerHour { get; set; }
         public decimal Capacity { get; set; }

@@ -36,6 +36,7 @@ namespace ParkShark.Services
 
             await context.Entry(parkingLot).Reference(p => p.Division).LoadAsync();
             await context.Entry(parkingLot).Reference(p => p.Contact).LoadAsync();
+            await context.Entry(parkingLot).Reference(p => p.BuildingType).LoadAsync();
 
             return parkingLot;
         }
@@ -45,6 +46,7 @@ namespace ParkShark.Services
             return await context.ParkingLots
                 .Include(p => p.Division)
                 .Include(p => p.Contact)
+                .Include(p => p.BuildingType)
                 .OrderBy(p => p.Id)
                 .AsNoTracking()
                 .ToListAsync();
@@ -55,6 +57,7 @@ namespace ParkShark.Services
             return await context.ParkingLots
                 .Include(p => p.Division)
                 .Include(p => p.Contact)
+                .Include(p => p.BuildingType)
                 .AsNoTracking()
                 .FirstOrDefaultAsync(p => p.Id == id);
         }

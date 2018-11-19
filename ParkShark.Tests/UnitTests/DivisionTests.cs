@@ -13,51 +13,21 @@ namespace ParkShark.Tests.UnitTests
     [TestClass]
     public class DivisionTests : UnitTestBase
     {
-        private readonly Mapper mapper = null;
-
-        public DivisionTests()
-        {
-            mapper = new Mapper();
-            //Mappings for DTO and Entity
-            mapper.CreateMap<CreateDivisionDto, Division>((dto, m) => new Division(dto.Name, dto.OriginalName, dto.Director));
-            mapper.CreateMap<Division, DivisionDto>((division, m) =>
-            {
-                var subDivisions = division.SubDivisions;
-
-                var subDivisionDtos = new List<DivisionDto>();
-                foreach (var subDivision in subDivisions)
-                {
-                    subDivisionDtos.Add(m.MapTo<DivisionDto, Division>(subDivision));
-                }
-
-                return new DivisionDto
-                {
-                    Id = division.Id,
-                    Name = division.Name,
-                    OriginalName = division.OriginalName,
-                    Director = division.Director,
-                    ParentDivisionId = division.ParentDivisionId,
-                    SubDivisions = subDivisionDtos
-                };
-            });
-            mapper.CreateMap<CreateSubDivisionDto, Division>((dto, m) => new Division(dto.Name, dto.OriginalName, dto.Director, dto.ParentDivisionId));
-        }
-
         [TestMethod]
         public async Task DivisionsShouldBeReturned()
         {
-            using (var context = NewInMemoryParkSharkDbContext())
+            using (var context = await NewParkSharkInMemoryTestContext())
             {
                 //Setup test data
-                await context.Divisions.AddAsync(new Division("Apple", "Apple Computer", "Steve Jobs"));
+                await context.ParkSharkDbContext.Divisions.AddAsync(new Division("Apple", "Apple Computer", "Steve Jobs"));
 
-                await context.Divisions.AddAsync(new Division("International Brol Machinekes", "IBM", "Steve Flops"));
+                await context.ParkSharkDbContext.Divisions.AddAsync(new Division("International Brol Machinekes", "IBM", "Steve Flops"));
 
-                await context.SaveChangesAsync();
+                await context.ParkSharkDbContext.SaveChangesAsync();
 
-                var divisionService = new DivisionService(context);
+                var divisionService = new DivisionService(context.ParkSharkDbContext);
 
-                var controller = new DivisionsController(mapper, divisionService);
+                var controller = new DivisionsController(context.Mapper, divisionService);
                 var divisions = GetResult<IEnumerable<DivisionDto>>((await controller.GetDivisions()));
 
                 var jobsDivision = divisions.FirstOrDefault(d => d.Director == "Steve Jobs");
@@ -70,19 +40,19 @@ namespace ParkShark.Tests.UnitTests
         [TestMethod]
         public async Task DivisionsWithSubDivisionsShouldBeReturned()
         {
-            using (var context = NewInMemoryParkSharkDbContext())
+            using (var context = await NewParkSharkInMemoryTestContext())
             {
                 //Setup test data
                 var parentDivision = new Division("Parent", "Parent", "Steve Jobs");
-                await context.Divisions.AddAsync(parentDivision);
-                await context.Divisions.AddAsync(new Division("Child1", "Child1", "Steve Jobs", parentDivision.Id));
-                await context.Divisions.AddAsync(new Division("Child2", "Child2", "Steve Jobs", parentDivision.Id));
+                await context.ParkSharkDbContext.Divisions.AddAsync(parentDivision);
+                await context.ParkSharkDbContext.Divisions.AddAsync(new Division("Child1", "Child1", "Steve Jobs", parentDivision.Id));
+                await context.ParkSharkDbContext.Divisions.AddAsync(new Division("Child2", "Child2", "Steve Jobs", parentDivision.Id));
 
-                await context.SaveChangesAsync();
+                await context.ParkSharkDbContext.SaveChangesAsync();
 
-                var divisionService = new DivisionService(context);
+                var divisionService = new DivisionService(context.ParkSharkDbContext);
 
-                var controller = new DivisionsController(mapper, divisionService);
+                var controller = new DivisionsController(context.Mapper, divisionService);
                 var division = GetResult<DivisionDto>((await controller.GetDivision(parentDivision.Id)));
 
                 Assert.AreEqual(2, division.SubDivisions.Count);
@@ -92,11 +62,11 @@ namespace ParkShark.Tests.UnitTests
         [TestMethod]
         public async Task DivisionShouldBeCreated()
         {
-            using (var context = NewInMemoryParkSharkDbContext())
+            using (var context = await NewParkSharkInMemoryTestContext())
             {
-                var divisionService = new DivisionService(context);
+                var divisionService = new DivisionService(context.ParkSharkDbContext);
 
-                var controller = new DivisionsController(mapper, divisionService);
+                var controller = new DivisionsController(context.Mapper, divisionService);
                 var division = GetResult<DivisionDto>(await controller.CreateDivision(new CreateDivisionDto
                 {
                     Name = "Test",
@@ -104,7 +74,7 @@ namespace ParkShark.Tests.UnitTests
                     OriginalName = "Te"
                 }));
 
-                var divisionInDb = await context.Divisions.FindAsync(division.Id);
+                var divisionInDb = await context.ParkSharkDbContext.Divisions.FindAsync(division.Id);
 
                 Assert.AreEqual("Test", division.Name);
                 Assert.AreEqual("Dir", division.Director);
@@ -117,18 +87,18 @@ namespace ParkShark.Tests.UnitTests
         [TestMethod]
         public async Task DivisionShouldBeReturned()
         {
-            using (var context = NewInMemoryParkSharkDbContext())
+            using (var context = await NewParkSharkInMemoryTestContext())
             {
                 //Setup test data
-                await context.Divisions.AddAsync(new Division("Apple", "Apple Computer", "Steve Jobs"));
+                await context.ParkSharkDbContext.Divisions.AddAsync(new Division("Apple", "Apple Computer", "Steve Jobs"));
 
-                await context.SaveChangesAsync();
+                await context.ParkSharkDbContext.SaveChangesAsync();
 
-                var steveJobsDivision = context.Divisions.FirstOrDefault(d => d.Name == "Apple");
+                var steveJobsDivision = context.ParkSharkDbContext.Divisions.FirstOrDefault(d => d.Name == "Apple");
 
-                var divisionService = new DivisionService(context);
+                var divisionService = new DivisionService(context.ParkSharkDbContext);
 
-                var controller = new DivisionsController(mapper, divisionService);
+                var controller = new DivisionsController(context.Mapper, divisionService);
                 var division = GetResult<DivisionDto>((await controller.GetDivision(steveJobsDivision.Id)));
 
                 Assert.AreEqual("Apple", division.Name);
@@ -141,11 +111,11 @@ namespace ParkShark.Tests.UnitTests
         [TestMethod]
         public async Task SubDivisionShouldBeCreated()
         {
-            using (var context = NewInMemoryParkSharkDbContext())
+            using (var context = await NewParkSharkInMemoryTestContext())
             {
-                var divisionService = new DivisionService(context);
+                var divisionService = new DivisionService(context.ParkSharkDbContext);
 
-                var controller = new DivisionsController(mapper, divisionService);
+                var controller = new DivisionsController(context.Mapper, divisionService);
                 var division = GetResult<DivisionDto>(await controller.CreateSubDivision(new CreateSubDivisionDto
                 {
                     Name = "Test",
@@ -154,7 +124,7 @@ namespace ParkShark.Tests.UnitTests
                     ParentDivisionId = 1
                 }));
 
-                var divisionInDb = await context.Divisions.FindAsync(division.Id);
+                var divisionInDb = await context.ParkSharkDbContext.Divisions.FindAsync(division.Id);
 
                 Assert.AreEqual("Test", division.Name);
                 Assert.AreEqual("Dir", division.Director);
