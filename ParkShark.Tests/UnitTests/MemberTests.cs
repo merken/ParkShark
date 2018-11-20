@@ -125,5 +125,68 @@ namespace ParkShark.Tests.UnitTests
                 Assert.AreEqual("155542D4", members.ElementAt(1).LicensePlate.Number);
             }
         }
+
+        [TestMethod]
+        public async Task MemberShouldBeCreatedWithBronzeLevelAsDefault()
+        {
+            using (var context = await NewParkSharkInMemoryTestContext())
+            {
+                var memberService = new MemberService(context.ParkSharkDbContext);
+                var membersController = new MembersController(context.Mapper, memberService);
+
+                var newMemberDto = new CreateNewMemberDto
+                {
+                    ContactName = "Maarten Merken",
+                    ContactMobilePhone = "00486743685",
+                    ContactEmail = "merken.maarten@gmail.com",
+                    ContactStreet = "Aardeweg",
+                    ContactStreetNumber = "39",
+                    ContactPostalCode = "3582",
+                    ContactPostalName = "Koersel",
+                    LicensePlateNumber = "VXK155",
+                    LicensePlateCountry = "BE",
+                    RegistrationDate = DateTime.Now
+                };
+
+                var newMember = GetResult<MemberDto>(await membersController.CreateNewMember(newMemberDto));
+                var memberInDb = await context.ParkSharkDbContext.Members.FindAsync(newMember.Id);
+                await context.ParkSharkDbContext.Entry(memberInDb).Reference(c => c.RelatedMemberShipLevel).LoadAsync();
+
+                Assert.AreEqual(MemberShipLevel.Level.Bronze, memberInDb.MemberShipLevel);
+                Assert.AreEqual(MemberShipLevel.Level.Bronze, memberInDb.RelatedMemberShipLevel.Name);
+            }
+        }
+
+        [TestMethod]
+        public async Task MemberShouldBeCreatedWithGoldLevel()
+        {
+            using (var context = await NewParkSharkInMemoryTestContext())
+            {
+                var memberService = new MemberService(context.ParkSharkDbContext);
+                var membersController = new MembersController(context.Mapper, memberService);
+
+                var newMemberDto = new CreateNewMemberDto
+                {
+                    ContactName = "Maarten Merken",
+                    ContactMobilePhone = "00486743685",
+                    ContactEmail = "merken.maarten@gmail.com",
+                    ContactStreet = "Aardeweg",
+                    ContactStreetNumber = "39",
+                    ContactPostalCode = "3582",
+                    ContactPostalName = "Koersel",
+                    LicensePlateNumber = "VXK155",
+                    LicensePlateCountry = "BE",
+                    RegistrationDate = DateTime.Now,
+                    MemberShipLevel = MemberShipLevel.Level.Gold.ToString()
+                };
+
+                var newMember = GetResult<MemberDto>(await membersController.CreateNewMember(newMemberDto));
+                var memberInDb = await context.ParkSharkDbContext.Members.FindAsync(newMember.Id);
+                await context.ParkSharkDbContext.Entry(memberInDb).Reference(c => c.RelatedMemberShipLevel).LoadAsync();
+
+                Assert.AreEqual(MemberShipLevel.Level.Gold, memberInDb.MemberShipLevel);
+                Assert.AreEqual(MemberShipLevel.Level.Gold, memberInDb.RelatedMemberShipLevel.Name);
+            }
+        }
     }
 }

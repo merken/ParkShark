@@ -15,7 +15,6 @@ namespace ParkShark.Services
         Task<Member> CreateNewMember(Member member);
         Task<IEnumerable<Member>> GetAllMembers();
         Task<Member> GetMember(int id);
-
     }
 
     public class MemberService : IMemberService
@@ -42,6 +41,7 @@ namespace ParkShark.Services
         {
             return await context.Set<Member>()
                 .Include(m => m.Contact)
+                .Include(m => m.RelatedMemberShipLevel)
                 .AsNoTracking()
                 .ToListAsync();
         }

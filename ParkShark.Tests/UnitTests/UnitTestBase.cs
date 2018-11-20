@@ -75,6 +75,10 @@ namespace ParkShark.Tests.UnitTests
             await context.SaveChangesAsync();
             await context.Set<BuildingType>().AddAsync(new BuildingType(nameof(BuildingTypes.Aboveground)));
             await context.SaveChangesAsync();
+            await context.Set<MemberShipLevel>().AddAsync(new MemberShipLevel(MemberShipLevel.Level.Bronze, 0, 0, 240));
+            await context.Set<MemberShipLevel>().AddAsync(new MemberShipLevel(MemberShipLevel.Level.Silver, 10, 20, 360));
+            await context.Set<MemberShipLevel>().AddAsync(new MemberShipLevel(MemberShipLevel.Level.Gold, 40, 30, 1440));
+            await context.SaveChangesAsync();
         }
 
         protected static void ConfigureMappings(Mapper mapper)
@@ -167,6 +171,12 @@ namespace ParkShark.Tests.UnitTests
                     address);
                 var licensePlace = new LicensePlate(dto.LicensePlateNumber, dto.LicensePlateCountry);
 
+                if (!String.IsNullOrEmpty(dto.MemberShipLevel))
+                {
+                    var memberShipLevel = (MemberShipLevel.Level)Enum.Parse(typeof(MemberShipLevel.Level), dto.MemberShipLevel);
+                    return new Member(contact, licensePlace, dto.RegistrationDate, memberShipLevel);
+                }
+
                 return new Member(contact, licensePlace, dto.RegistrationDate);
             });
 
@@ -174,6 +184,14 @@ namespace ParkShark.Tests.UnitTests
             {
                 Country = licensePlate.Country,
                 Number = licensePlate.Number
+            });
+
+            mapper.CreateMap<MemberShipLevel, MemberShipLevelDto>((memberShipLevel, m) => new MemberShipLevelDto
+            {
+                Name = memberShipLevel.Name.ToString(),
+                MonthlyCost = memberShipLevel.MonthlyCost,
+                AllocationReduction = memberShipLevel.AllocationReduction,
+                MaximumDurationInMinutes = memberShipLevel.MaximumDurationInMinutes
             });
 
             mapper.CreateMap<Member, MemberDto>((member, m) =>
@@ -186,7 +204,8 @@ namespace ParkShark.Tests.UnitTests
                     Id = member.Id,
                     Contact = contactDto,
                     LicensePlate = licensePlateDto,
-                    RegistrationDate = member.RegistrationDate
+                    RegistrationDate = member.RegistrationDate,
+                    MemberShipLevel = member.MemberShipLevel.ToString()
                 };
             });
         }

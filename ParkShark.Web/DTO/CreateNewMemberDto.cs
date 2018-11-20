@@ -18,5 +18,6 @@ namespace ParkShark.Web.DTO
         public string LicensePlateNumber { get; set; }
         public string LicensePlateCountry { get; set; }
         public DateTime RegistrationDate { get; set; }
+        public string MemberShipLevel { get; set; }
     }
 }

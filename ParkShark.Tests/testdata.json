@@ -21,6 +21,27 @@
     }
   ],
 
+  "memberShipLevels": [
+    {
+      "name": "Bronze",
+      "monthlyCost":  "0", 
+      "allocationReduction":  "0", 
+      "maximumDurationInMinutes":  "240"
+    },
+    {
+      "name": "Silver",
+      "monthlyCost":  "10", 
+      "allocationReduction":  "20", 
+      "maximumDurationInMinutes":  "260"
+    },
+    {
+      "name": "Gold",
+      "monthlyCost":  "40", 
+      "allocationReduction":  "30", 
+      "maximumDurationInMinutes":  "1440"
+    }
+  ],
+
   "parkinglots": [
     {
       "name": "PL1",

@@ -29,6 +29,7 @@ namespace ParkShark.Tests.IntegrationTests
         public List<Division> Divisions { get; set; }
         public List<BuildingType> BuildingTypes { get; set; }
         public List<ParkingLot> ParkingLots { get; set; }
+        public List<MemberShipLevel> MemberShipLevels { get; set; }
         public List<Member> Members { get; set; }
     }
 
@@ -64,6 +65,7 @@ namespace ParkShark.Tests.IntegrationTests
             List<Division> divisions = null;
             List<BuildingType> buildingTypes = null;
             List<ParkingLot> parkingLots = null;
+            List<MemberShipLevel> memberShipLevels = null;
             List<Member> members = null;
 
             using (StreamReader reader = new StreamReader(@"testdata.json"))
@@ -73,6 +75,7 @@ namespace ParkShark.Tests.IntegrationTests
                 divisions = testData.Divisions;
                 buildingTypes = testData.BuildingTypes;
                 parkingLots = testData.ParkingLots;
+                memberShipLevels = testData.MemberShipLevels;
                 members = testData.Members;
             }
 
@@ -80,6 +83,7 @@ namespace ParkShark.Tests.IntegrationTests
             context.Set<BuildingType>().RemoveRange(context.Set<BuildingType>());
             context.Contacts.RemoveRange(context.Contacts);
             context.ParkingLots.RemoveRange(context.ParkingLots);
+            context.Set<MemberShipLevel>().RemoveRange(context.Set<MemberShipLevel>());
             context.Members.RemoveRange(context.Members);
             context.SaveChanges();
 
@@ -112,6 +116,15 @@ namespace ParkShark.Tests.IntegrationTests
                 foreach (var parkingLot in parkingLots.OrderBy(p => p.Name))
                 {
                     context.ParkingLots.Add(parkingLot);
+                    context.SaveChanges();
+                }
+            }
+
+            if (memberShipLevels != null)
+            {
+                foreach (var memberShipLevel in memberShipLevels.OrderBy(p => (int)p.Name))
+                {
+                    context.Set<MemberShipLevel>().Add(memberShipLevel);
                     context.SaveChanges();
                 }
             }
@@ -245,6 +258,12 @@ namespace ParkShark.Tests.IntegrationTests
                     address);
                 var licensePlace = new LicensePlate(dto.LicensePlateNumber, dto.LicensePlateCountry);
 
+                if (!String.IsNullOrEmpty(dto.MemberShipLevel))
+                {
+                    var memberShipLevel = (MemberShipLevel.Level)Enum.Parse(typeof(MemberShipLevel.Level), dto.MemberShipLevel);
+                    return new Member(contact, licensePlace, dto.RegistrationDate, memberShipLevel);
+                }
+
                 return new Member(contact, licensePlace, dto.RegistrationDate);
             });
 
@@ -252,6 +271,14 @@ namespace ParkShark.Tests.IntegrationTests
             {
                 Country = licensePlate.Country,
                 Number = licensePlate.Number
+            });
+
+            mapper.CreateMap<MemberShipLevel, MemberShipLevelDto>((memberShipLevel, m) => new MemberShipLevelDto
+            {
+                Name = memberShipLevel.Name.ToString(),
+                MonthlyCost = memberShipLevel.MonthlyCost,
+                AllocationReduction = memberShipLevel.AllocationReduction,
+                MaximumDurationInMinutes = memberShipLevel.MaximumDurationInMinutes
             });
 
             mapper.CreateMap<Member, MemberDto>((member, m) =>
@@ -264,7 +291,8 @@ namespace ParkShark.Tests.IntegrationTests
                     Id = member.Id,
                     Contact = contactDto,
                     LicensePlate = licensePlateDto,
-                    RegistrationDate = member.RegistrationDate
+                    RegistrationDate = member.RegistrationDate,
+                    MemberShipLevel = member.MemberShipLevel.ToString()
                 };
             });
         }

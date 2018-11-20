@@ -140,6 +140,12 @@ namespace ParkShark.Web
                     address);
                 var licensePlace = new LicensePlate(dto.LicensePlateNumber, dto.LicensePlateCountry);
 
+                if (!String.IsNullOrEmpty(dto.MemberShipLevel))
+                {
+                    var memberShipLevel = (MemberShipLevel.Level)Enum.Parse(typeof(MemberShipLevel.Level), dto.MemberShipLevel);
+                    return new Member(contact, licensePlace, dto.RegistrationDate, memberShipLevel);
+                }
+
                 return new Member(contact, licensePlace, dto.RegistrationDate);
             });
 
@@ -147,6 +153,14 @@ namespace ParkShark.Web
             {
                 Country = licensePlate.Country,
                 Number = licensePlate.Number
+            });
+
+            mapper.CreateMap<MemberShipLevel, MemberShipLevelDto>((memberShipLevel, m) => new MemberShipLevelDto
+            {
+                Name = memberShipLevel.Name.ToString(),
+                MonthlyCost = memberShipLevel.MonthlyCost,
+                AllocationReduction = memberShipLevel.AllocationReduction,
+                MaximumDurationInMinutes = memberShipLevel.MaximumDurationInMinutes
             });
 
             mapper.CreateMap<Member, MemberDto>((member, m) =>
@@ -159,7 +173,8 @@ namespace ParkShark.Web
                     Id = member.Id,
                     Contact = contactDto,
                     LicensePlate = licensePlateDto,
-                    RegistrationDate = member.RegistrationDate
+                    RegistrationDate = member.RegistrationDate,
+                    MemberShipLevel = member.MemberShipLevel.ToString()
                 };
             });
         }

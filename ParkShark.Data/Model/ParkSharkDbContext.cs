@@ -31,7 +31,7 @@ namespace ParkShark.Data.Model
 
             modelBuilder.Entity<Division>()
                 .HasOne(d => d.ParentDivision)
-                .WithMany(d=>d.SubDivisions)
+                .WithMany(d => d.SubDivisions)
                 .HasForeignKey(d => d.ParentDivisionId);
 
             modelBuilder.Entity<BuildingType>()
@@ -80,12 +80,29 @@ namespace ParkShark.Data.Model
                 .HasForeignKey(m => m.ContactId);
 
             modelBuilder.Entity<Member>()
-                .OwnsOne(m=>m.LicensePlate,
+                .OwnsOne(m => m.LicensePlate,
                     licensePlate =>
                     {
                         licensePlate.Property(c => c.Country).HasColumnName("LicensePlateNumber");
                         licensePlate.Property(c => c.Number).HasColumnName("LicensePlateCountry");
                     });
+
+            modelBuilder.Entity<Member>()
+                .Property(m => m.MemberShipLevel)
+                .HasConversion<string>();
+
+            modelBuilder.Entity<Member>()
+                .HasOne(m => m.RelatedMemberShipLevel)
+                .WithMany()
+                .HasForeignKey(m => m.MemberShipLevel);
+
+            modelBuilder.Entity<MemberShipLevel>()
+                .Property(m => m.Name)
+                .HasConversion<string>();
+
+            modelBuilder.Entity<MemberShipLevel>()
+                .ToTable("MemberShipLevels")
+                .HasKey(m => m.Name);
 
             base.OnModelCreating(modelBuilder);
         }

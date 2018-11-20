@@ -9,7 +9,7 @@ namespace ParkShark.Domain
     {
         private Member() { }
 
-        public Member(Contact contact, LicensePlate licensePlate, DateTime registrationDate)
+        public Member(Contact contact, LicensePlate licensePlate, DateTime registrationDate, MemberShipLevel.Level memberShipLevel = Domain.MemberShipLevel.Level.Bronze)
         {
             if (contact == null)
             {
@@ -29,6 +29,7 @@ namespace ParkShark.Domain
             this.Contact = contact;
             this.LicensePlate = licensePlate;
             this.RegistrationDate = registrationDate;
+            this.MemberShipLevel = memberShipLevel;
         }
 
         public int Id { get; private set; }
@@ -36,5 +37,7 @@ namespace ParkShark.Domain
         public Contact Contact { get; set; }
         public LicensePlate LicensePlate { get; set; }
         public DateTime RegistrationDate { get; set; }
+        public MemberShipLevel.Level MemberShipLevel { get; set; } = Domain.MemberShipLevel.Level.Bronze;
+        public MemberShipLevel RelatedMemberShipLevel { get; set; }
     }
 }

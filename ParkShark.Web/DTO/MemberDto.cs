@@ -11,5 +11,6 @@ namespace ParkShark.Web.DTO
         public ContactDto Contact { get; set; }
         public LicensePlateDto LicensePlate { get; set; }
         public DateTime RegistrationDate { get; set; }
+        public string MemberShipLevel { get; set; }
     }
 }

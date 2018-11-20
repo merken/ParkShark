@@ -4,6 +4,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
+using ParkShark.Domain;
 using ParkShark.Web.DTO;
 
 namespace ParkShark.Tests.IntegrationTests
@@ -67,7 +68,7 @@ namespace ParkShark.Tests.IntegrationTests
                 var createMemberResponse = await client.PostAsync("api/members", payload);
                 var memberId = (await DeserializeAsAsync<MemberDto>(createMemberResponse.Content)).Id;
 
-                var memberResponse = await client.GetAsync("api/members/"+ memberId);
+                var memberResponse = await client.GetAsync("api/members/" + memberId);
                 var member = await DeserializeAsAsync<MemberDto>(memberResponse.Content);
 
                 Assert.AreNotEqual(default(int), member.Id);
@@ -94,6 +95,61 @@ namespace ParkShark.Tests.IntegrationTests
 
                 Assert.AreEqual("Maarten Merken", members.ElementAt(1).Contact.Name);
                 Assert.AreEqual("VXK014", members.ElementAt(1).LicensePlate.Number);
+            });
+        }
+
+        [TestMethod]
+        public async Task MemberShouldBeCreatedWithBronzeLevelAsDefault()
+        {
+            await RunWithinTransactionAndRollBack(async (client) =>
+            {
+                var newMemberDto = new CreateNewMemberDto
+                {
+                    ContactName = "Maarten Merken",
+                    ContactMobilePhone = "00486743685",
+                    ContactEmail = "merken.maarten@gmail.com",
+                    ContactStreet = "Aardeweg",
+                    ContactStreetNumber = "39",
+                    ContactPostalCode = "3582",
+                    ContactPostalName = "Koersel",
+                    LicensePlateNumber = "VXK155",
+                    LicensePlateCountry = "BE",
+                    RegistrationDate = DateTime.Now
+                };
+
+                var payload = Serialize(newMemberDto);
+                var createMemberResponse = await client.PostAsync("api/members", payload);
+                var memberDto = await DeserializeAsAsync<MemberDto>(createMemberResponse.Content);
+
+                Assert.AreEqual(MemberShipLevel.Level.Bronze.ToString(), memberDto.MemberShipLevel);
+            });
+        }
+
+        [TestMethod]
+        public async Task MemberShouldBeCreatedWitGoldLevel()
+        {
+            await RunWithinTransactionAndRollBack(async (client) =>
+            {
+                var newMemberDto = new CreateNewMemberDto
+                {
+                    ContactName = "Maarten Merken",
+                    ContactMobilePhone = "00486743685",
+                    ContactEmail = "merken.maarten@gmail.com",
+                    ContactStreet = "Aardeweg",
+                    ContactStreetNumber = "39",
+                    ContactPostalCode = "3582",
+                    ContactPostalName = "Koersel",
+                    LicensePlateNumber = "VXK155",
+                    LicensePlateCountry = "BE",
+                    RegistrationDate = DateTime.Now,
+                    MemberShipLevel = MemberShipLevel.Level.Gold.ToString()
+                };
+
+                var payload = Serialize(newMemberDto);
+                var createMemberResponse = await client.PostAsync("api/members", payload);
+                var memberDto = await DeserializeAsAsync<MemberDto>(createMemberResponse.Content);
+
+                Assert.AreEqual(MemberShipLevel.Level.Gold.ToString(), memberDto.MemberShipLevel);
             });
         }
     }
