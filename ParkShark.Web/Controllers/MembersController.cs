@@ -23,6 +23,25 @@ namespace ParkShark.Web.Controllers
             this.service = service;
         }
 
+        [HttpGet]
+        public async Task<ActionResult<IEnumerable<MemberDto>>> GetAllMembers()
+        {
+            var members = await this.service.GetAllMembers();
+            return Ok(mapper.MapToList<MemberDto, Member>(members));
+        }
+
+        [HttpGet]
+        [Route("{id:int}")]
+        public async Task<ActionResult<MemberDto>> GetMember(int id)
+        {
+            var member = await this.service.GetMember(id);
+
+            if (member == null)
+                return NotFound();
+
+            return Ok(mapper.MapTo<MemberDto, Member>(member));
+        }
+
         [HttpPost]
         public async Task<ActionResult<MemberDto>> CreateNewMember(CreateNewMemberDto createNewMemberDto)
         {

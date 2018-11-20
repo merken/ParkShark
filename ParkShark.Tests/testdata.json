@@ -58,5 +58,43 @@
         }
       }
     }
+  ],
+  "members": [
+    {
+      "contact": {
+        "name": "John Doe",
+        "mobilePhone": "+55522211",
+        "email": "john.doe@gmail.com",
+        "address": {
+          "street": "Streety",
+          "streetNumber": "132",
+          "postalCode": "3500",
+          "postalName": "Hasselt"
+        }
+      },
+      "licensePlate": {
+        "number": "5511D54",
+        "country": "US"
+      },
+      "registrationDate": "2016-10-01 10:11:00"
+    },
+    {
+      "contact": {
+        "name": "Maarten Merken",
+        "mobilePhone": "+4865511444",
+        "email": "merken.maarten@gmail.com",
+        "address": {
+          "street": "Test1",
+          "streetNumber": "55",
+          "postalCode": "1000",
+          "postalName": "Brussel"
+        }
+      },
+      "licensePlate": {
+        "number": "VXK014",
+        "country": "BE"
+      },
+      "registrationDate": "2018-11-01 11:55:00"
+    }
   ]
 }

@@ -9,11 +9,11 @@ namespace ParkShark.Domain
     {
         private Member() { }
 
-        public Member(Contact newContact, LicensePlate licensePlate, DateTime registrationDate)
+        public Member(Contact contact, LicensePlate licensePlate, DateTime registrationDate)
         {
-            if (newContact == null)
+            if (contact == null)
             {
-                throw new ValidationException<Member>("newContact is required");
+                throw new ValidationException<Member>("contact is required");
             }
 
             if (licensePlate == null)
@@ -26,7 +26,7 @@ namespace ParkShark.Domain
                 throw new ValidationException<Member>("registrationDate is required");
             }
 
-            this.Contact = newContact;
+            this.Contact = contact;
             this.LicensePlate = licensePlate;
             this.RegistrationDate = registrationDate;
         }

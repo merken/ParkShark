@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Text;
 using System.Threading.Tasks;
+using Microsoft.EntityFrameworkCore;
 using ParkShark.Data.Model;
 using ParkShark.Domain;
 using ParkShark.Infrastructure;
@@ -12,10 +13,13 @@ namespace ParkShark.Services
     public interface IMemberService : IParkSharkService
     {
         Task<Member> CreateNewMember(Member member);
+        Task<IEnumerable<Member>> GetAllMembers();
+        Task<Member> GetMember(int id);
+
     }
 
     public class MemberService : IMemberService
-    {   
+    {
         private readonly ParkSharkDbContext context;
 
         public MemberService(ParkSharkDbContext context)
@@ -31,9 +35,23 @@ namespace ParkShark.Services
                 throw new PersistenceException("Member was not created");
 
             await context.Entry(member).Reference(p => p.Contact).LoadAsync();
-            await context.Entry(member).Reference(p => p.LicensePlate).LoadAsync();
 
             return member;
+        }
+        public async Task<IEnumerable<Member>> GetAllMembers()
+        {
+            return await context.Set<Member>()
+                .Include(m => m.Contact)
+                .AsNoTracking()
+                .ToListAsync();
+        }
+
+        public async Task<Member> GetMember(int id)
+        {
+            return await context.Set<Member>()
+                .Include(m => m.Contact)
+                .AsNoTracking()
+                .FirstOrDefaultAsync(d => d.Id == id);
         }
     }
 }

@@ -29,6 +29,7 @@ namespace ParkShark.Tests.IntegrationTests
         public List<Division> Divisions { get; set; }
         public List<BuildingType> BuildingTypes { get; set; }
         public List<ParkingLot> ParkingLots { get; set; }
+        public List<Member> Members { get; set; }
     }
 
     [TestClass]
@@ -63,6 +64,7 @@ namespace ParkShark.Tests.IntegrationTests
             List<Division> divisions = null;
             List<BuildingType> buildingTypes = null;
             List<ParkingLot> parkingLots = null;
+            List<Member> members = null;
 
             using (StreamReader reader = new StreamReader(@"testdata.json"))
             {
@@ -71,18 +73,21 @@ namespace ParkShark.Tests.IntegrationTests
                 divisions = testData.Divisions;
                 buildingTypes = testData.BuildingTypes;
                 parkingLots = testData.ParkingLots;
+                members = testData.Members;
             }
 
             context.Divisions.RemoveRange(context.Divisions);
             context.Set<BuildingType>().RemoveRange(context.Set<BuildingType>());
             context.Contacts.RemoveRange(context.Contacts);
             context.ParkingLots.RemoveRange(context.ParkingLots);
+            context.Members.RemoveRange(context.Members);
             context.SaveChanges();
 
             ReseedIdentity(context, "Divisions");
             ReseedIdentity(context, "BuildingTypes");
             ReseedIdentity(context, "Contacts");
             ReseedIdentity(context, "ParkingLots");
+            ReseedIdentity(context, "Members");
 
             if (divisions != null)
             {
@@ -107,6 +112,15 @@ namespace ParkShark.Tests.IntegrationTests
                 foreach (var parkingLot in parkingLots.OrderBy(p => p.Name))
                 {
                     context.ParkingLots.Add(parkingLot);
+                    context.SaveChanges();
+                }
+            }
+
+            if (members != null)
+            {
+                foreach (var member in members.OrderBy(p => p.Contact.Name))
+                {
+                    context.Members.Add(member);
                     context.SaveChanges();
                 }
             }
@@ -142,7 +156,7 @@ namespace ParkShark.Tests.IntegrationTests
         protected virtual void ConfigureMappings(Mapper mapper)
         {
             mapper.CreateMap<CreateDivisionDto, Division>((dto, m) => new Division(dto.Name, dto.OriginalName, dto.Director));
-            
+
             mapper.CreateMap<CreateSubDivisionDto, Division>((dto, m) => new Division(dto.Name, dto.OriginalName, dto.Director, dto.ParentDivisionId));
 
             mapper.CreateMap<CreateNewParkingLotDto, ParkingLot>((dto, m) =>

@@ -65,7 +65,7 @@ namespace ParkShark.Tests.UnitTests
             return okResult.Value as T;
         }
 
-        protected async Task ProvideTestData(ParkSharkDbContext context)
+        protected virtual async Task ProvideTestData(ParkSharkDbContext context)
         {
             await context.Divisions.AddAsync(new Division("First", "First", "Mr Test"));
             await context.SaveChangesAsync();
