@@ -25,5 +25,13 @@ namespace ParkShark.Domain
 
         public string Number { get; set; }
         public string Country { get; set; }
+
+        public override bool Equals(object obj)
+        {
+            if (obj is LicensePlate other)
+                return other.Number.Equals(this.Number) && other.Country.Equals(this.Country);
+
+            return false;
+        }
     }
 }

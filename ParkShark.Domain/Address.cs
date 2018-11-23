@@ -13,22 +13,22 @@ namespace ParkShark.Domain
         {
             if (String.IsNullOrEmpty(street))
             {
-                throw new ValidationException<Contact>("street is required");
+                throw new ValidationException<Address>("street is required");
             }
 
             if (String.IsNullOrEmpty(streetNumber))
             {
-                throw new ValidationException<Contact>("streetNumber is required");
+                throw new ValidationException<Address>("streetNumber is required");
             }
 
             if (String.IsNullOrEmpty(postalCode))
             {
-                throw new ValidationException<Contact>("postalCode is required");
+                throw new ValidationException<Address>("postalCode is required");
             }
 
             if (String.IsNullOrEmpty(postalName))
             {
-                throw new ValidationException<Contact>("postalName is required");
+                throw new ValidationException<Address>("postalName is required");
             }
 
             this.Street = street;

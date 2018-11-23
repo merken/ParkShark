@@ -295,6 +295,30 @@ namespace ParkShark.Tests.IntegrationTests
                     MemberShipLevel = member.MemberShipLevel.ToString()
                 };
             });
+
+            mapper.CreateMap<CreateAllocationDto, Allocation>((dto, m) =>
+            {
+                var licensePlace = new LicensePlate(dto.LicensePlateNumber, dto.LicensePlateCountry);
+
+                return new Allocation(dto.MemberId, dto.ParkingLotId, licensePlace, DateTime.Now);
+            });
+
+            mapper.CreateMap<Allocation, AllocationDto>((allocation, m) =>
+            {
+                var memberDto = allocation.Member != null ? m.MapTo<MemberDto, Member>(allocation.Member) : null;
+                var parkingLotDto = allocation.ParkingLot != null ? m.MapTo<ParkingLotDto, ParkingLot>(allocation.ParkingLot) : null;
+                var licensePlateDto = allocation.LicensePlate != null ? m.MapTo<LicensePlateDto, LicensePlate>(allocation.LicensePlate) : null;
+
+                return new AllocationDto
+                {
+                    Id = allocation.Id,
+                    Member = memberDto,
+                    ParkingLot = parkingLotDto,
+                    LicensePlate = licensePlateDto,
+                    StartDateTime = allocation.StartDateTime,
+                    EndDateTime = allocation.EndDateTime
+                };
+            });
         }
 
         /// <summary>

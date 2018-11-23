@@ -14,6 +14,7 @@ namespace ParkShark.Data.Model
         public virtual DbSet<Contact> Contacts { get; set; }
         public virtual DbSet<ParkingLot> ParkingLots { get; set; }
         public virtual DbSet<Member> Members { get; set; }
+        public virtual DbSet<Allocation> Allocations { get; set; }
 
         public ParkSharkDbContext(DbContextOptions options) : base(options)
         {
@@ -63,12 +64,12 @@ namespace ParkShark.Data.Model
 
             modelBuilder.Entity<Contact>()
                 .OwnsOne(c => c.Address,
-                    contact =>
+                    address =>
                     {
-                        contact.Property(c => c.Street).HasColumnName("Street");
-                        contact.Property(c => c.StreetNumber).HasColumnName("StreetNumber");
-                        contact.Property(c => c.PostalCode).HasColumnName("PostalCode");
-                        contact.Property(c => c.PostalName).HasColumnName("PostalName");
+                        address.Property(a => a.Street).HasColumnName("Street");
+                        address.Property(a => a.StreetNumber).HasColumnName("StreetNumber");
+                        address.Property(a => a.PostalCode).HasColumnName("PostalCode");
+                        address.Property(a => a.PostalName).HasColumnName("PostalName");
                     });
 
             modelBuilder.Entity<Member>()
@@ -103,6 +104,27 @@ namespace ParkShark.Data.Model
             modelBuilder.Entity<MemberShipLevel>()
                 .ToTable("MemberShipLevels")
                 .HasKey(m => m.Name);
+
+            modelBuilder.Entity<Allocation>()
+                .ToTable("Allocations")
+                .HasKey(m => m.Id);
+
+            modelBuilder.Entity<Allocation>()
+                .OwnsOne(a=>a.LicensePlate, licensePlate =>
+                {
+                    licensePlate.Property(c => c.Country).HasColumnName("LicensePlateNumber");
+                    licensePlate.Property(c => c.Number).HasColumnName("LicensePlateCountry");
+                });
+
+            modelBuilder.Entity<Allocation>()
+                .HasOne(a => a.Member)
+                .WithMany()
+                .HasForeignKey(a => a.MemberId);
+            
+            modelBuilder.Entity<Allocation>()
+                .HasOne(a => a.ParkingLot)
+                .WithMany()
+                .HasForeignKey(a => a.ParkingLotId);
 
             base.OnModelCreating(modelBuilder);
         }
