@@ -13,5 +13,6 @@ namespace ParkShark.Web.DTO
         public LicensePlateDto LicensePlate { get; set; }
         public DateTime StartDateTime { get; set; }
         public DateTime? EndDateTime { get; set; }
+        public String Status { get; set; }
     }
 }

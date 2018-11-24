@@ -198,7 +198,8 @@ namespace ParkShark.Web
                     ParkingLot = parkingLotDto,
                     LicensePlate = licensePlateDto,
                     StartDateTime = allocation.StartDateTime,
-                    EndDateTime = allocation.EndDateTime
+                    EndDateTime = allocation.EndDateTime,
+                    Status = allocation.Status.ToString()
                 };
             });
         }

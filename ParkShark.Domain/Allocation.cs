@@ -5,6 +5,12 @@ using ParkShark.Domain.Exceptions;
 
 namespace ParkShark.Domain
 {
+    public enum AllocationStatus
+    {
+        Active,
+        Passive
+    }
+
     public class Allocation
     {
         private Allocation() { }
@@ -45,5 +51,16 @@ namespace ParkShark.Domain
         public LicensePlate LicensePlate { get; set; }
         public DateTime StartDateTime { get; set; }
         public DateTime? EndDateTime { get; set; }
+
+        public AllocationStatus Status
+        {
+            get
+            {
+                if (EndDateTime == null)
+                    return AllocationStatus.Active;
+
+                return AllocationStatus.Passive;
+            }
+        }
     }
 }

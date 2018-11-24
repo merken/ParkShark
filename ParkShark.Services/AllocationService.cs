@@ -15,7 +15,9 @@ namespace ParkShark.Services
     public interface IAllocationService : IParkSharkService
     {
         Task<Allocation> CreateAllocation(Allocation allocation);
+        Task<Allocation> StopAllocation(Guid allocationId, int memberId);
         Task<IEnumerable<Allocation>> GetAllocationsForParkingLot(int parkingLotId);
+        Task<IEnumerable<Allocation>> GetAllocations(int? limit = null, AllocationStatus? status = null, bool descending = false);
     }
 
     public class AllocationService : IAllocationService
@@ -60,10 +62,49 @@ namespace ParkShark.Services
             return allocation;
         }
 
+        public async Task<Allocation> StopAllocation(Guid allocationId, int memberId)
+        {
+            var allocation = await context.Allocations.FindAsync(allocationId);
+            if (allocation.Status != AllocationStatus.Active)
+                throw new AllocationException($"Allocation {allocationId} is not active and cannot be stopped.");
+
+            if (memberId != allocation.MemberId)
+                throw new AllocationException($"Only the owner of the allocation can stop the allocation {allocationId}.");
+
+            allocation.EndDateTime = DateTime.Now;
+
+            if (await context.SaveChangesAsync() == 0)
+                throw new PersistenceException("Allocation was not modified");
+
+            return allocation;
+        }
+
         public async Task<IEnumerable<Allocation>> GetAllocationsForParkingLot(int parkingLotId)
         {
             return await context.Allocations
                 .Where(a => a.ParkingLotId == parkingLotId)
+                .Include(a => a.Member)
+                .Include(a => a.ParkingLot)
+                .ToListAsync();
+        }
+
+        public async Task<IEnumerable<Allocation>> GetAllocations(int? limit = null, AllocationStatus? status = null, bool descending = false)
+        {
+            var allAllocations = context.Allocations.AsQueryable();
+
+            if (status != null)
+                allAllocations = status == AllocationStatus.Active
+                    ? allAllocations.Where(a => a.EndDateTime == null)
+                    : allAllocations.Where(a => a.EndDateTime != null);
+
+            allAllocations = descending
+                ? allAllocations.OrderByDescending(a => a.StartDateTime)
+                : allAllocations.OrderBy(a => a.StartDateTime);
+
+            if (limit != null)
+                allAllocations = allAllocations.Take(limit.Value);
+
+            return await allAllocations
                 .Include(a => a.Member)
                 .Include(a => a.ParkingLot)
                 .ToListAsync();

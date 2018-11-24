@@ -110,21 +110,24 @@ namespace ParkShark.Data.Model
                 .HasKey(m => m.Id);
 
             modelBuilder.Entity<Allocation>()
-                .OwnsOne(a=>a.LicensePlate, licensePlate =>
-                {
-                    licensePlate.Property(c => c.Country).HasColumnName("LicensePlateNumber");
-                    licensePlate.Property(c => c.Number).HasColumnName("LicensePlateCountry");
-                });
+                .OwnsOne(a => a.LicensePlate, licensePlate =>
+                  {
+                      licensePlate.Property(c => c.Country).HasColumnName("LicensePlateNumber");
+                      licensePlate.Property(c => c.Number).HasColumnName("LicensePlateCountry");
+                  });
 
             modelBuilder.Entity<Allocation>()
                 .HasOne(a => a.Member)
                 .WithMany()
                 .HasForeignKey(a => a.MemberId);
-            
+
             modelBuilder.Entity<Allocation>()
                 .HasOne(a => a.ParkingLot)
                 .WithMany()
                 .HasForeignKey(a => a.ParkingLotId);
+
+            modelBuilder.Entity<Allocation>()
+                .Ignore(a => a.Status);
 
             base.OnModelCreating(modelBuilder);
         }

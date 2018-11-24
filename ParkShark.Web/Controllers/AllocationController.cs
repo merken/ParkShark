@@ -40,5 +40,14 @@ namespace ParkShark.Web.Controllers
 
             return Ok(dto);
         }
+
+        [HttpPut]
+        public async Task<ActionResult<AllocationDto>> StopAllocation(StopAllocationDto stopAllocation)
+        {
+            var newAllocation = await this.service.StopAllocation(stopAllocation.AllocationId, stopAllocation.MemberId);
+            var dto = this.mapper.MapTo<AllocationDto, Allocation>(newAllocation);
+
+            return Ok(dto);
+        }
     }
 }
